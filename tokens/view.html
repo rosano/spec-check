@@ -27,13 +27,11 @@ body {
 }
 
 dl {
-	--background: #f9f9f9;
-
+	
 	padding: var(--spacing);
 	border-radius: var(--corner);
 	
-	
-	background: var(--background);
+	background: #f9f9f9;
 	font-family: Lucida Grande, Helvetica Neue, Helvetica, Arial, sans-serif;
 }
 
@@ -44,9 +42,27 @@ hr {
 }
 
 #target {
+	padding: var(--spacing);
+	margin: var(--spacing) 0;
+	border-radius: var(--corner);
+
+	background: #fdffb8;
+
 	display: flex;
 
 	flex-direction: column;
+}
+
+#target > * {
+	margin-bottom: var(--spacing);
+}
+
+#target button {
+	align-self: start;
+}
+
+.hidden {
+	display: none !important;
 }
 </style>
 
@@ -66,11 +82,7 @@ const mod = {
 	// actions
 
 	async webfinger () {
-		const params = {
-			resource: `acct:${ mod.config.account_1 }@${ (new URL(mod.config.server)).hostname }`,
-		};
-		const json = await (await fetch(`${ mod.config.server }/.well-known/webfinger?${ new URLSearchParams(params) }`)).json();
-		window.webfinger.innerText = JSON.stringify(mod._webfinger = json.links.filter(e => e.rel === 'remotestorage').shift(), null, ' ');
+		window.webfinger.innerText = JSON.stringify(mod._webfinger = await util.webfinger(mod.config.server, mod.config.account_1), null, ' ');
 
 		if (mod._webfinger) {
 			window.oauth_1.removeAttribute('disabled')
@@ -97,6 +109,10 @@ const mod = {
 		window.history.replaceState({}, document.title, uri.substring(0, uri.indexOf("#")))
 
 		window.target.innerHTML = '';
+
+		window.target.classList.add('hidden');
+
+		window.nostate.classList.remove('hidden');
 	},
 
 	// utilities
@@ -109,6 +125,8 @@ const mod = {
 		if (params.state.account && params.state.purpose) {
 			mod.target[params.state.purpose] = params.access_token
 
+			window.target.classList.remove('hidden');
+
 			window.target.appendChild(Object.assign(document.createElement('strong'), {
 				innerHTML: 'Add the following line to your <code>.env</code> file',
 			}));
@@ -118,10 +136,12 @@ const mod = {
 				disabled: true,
 			}));
 
-			window.target.parentElement.appendChild(Object.assign(document.createElement('button'), {
+			window.target.appendChild(Object.assign(document.createElement('button'), {
 				innerText: 'clear state',
 				onclick: mod.reset,
 			}));
+
+			window.nostate.classList.add('hidden');
 		}
 	},
 
@@ -175,15 +195,17 @@ document.addEventListener('DOMContentLoaded', mod.DOMContentLoaded);
 <dt>TOKEN_READ_WRITE</dt>
 <dd id="token_rw">$TOKEN_READ_WRITE</dd>
 
-<hr>
+<div id="nostate">
+	<hr>
 
-<dt><button onclick="mod.webfinger()">webfinger</button></dt>
-<dd><pre id="webfinger"></pre></dd>
+	<dt><button onclick="mod.webfinger()">webfinger</button></dt>
+	<dd><pre id="webfinger"></pre></dd>
 
-<dt><button id="oauth_1" onclick="mod.token_rw()" disabled>token_rw</button></dt>
-<dd><pre id="webfinger"></pre></dd>
+	<dt><button id="oauth_1" onclick="mod.token_rw()" disabled>token_rw</button></dt>
+	<dd><pre id="webfinger"></pre></dd>
+</div>
 
-<div id="target"></div>
+<div id="target" class="hidden"></div>
 
 </dl>
 
