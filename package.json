@@ -1,7 +1,8 @@
 {
   "name": "api-test-suite",
   "scripts": {
-    "test": "vitest"
+    "test": "vitest",
+    "tokens": "nodemon --watch .env --watch ./tokens/server.js ./tokens/server.js"
   },
   "dependencies": {
     "vitest": "^4.0.18"

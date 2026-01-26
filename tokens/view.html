@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>api-test-suite token generator</title>
+
+<style>
+:root {
+	--background: #eee;
+	--body-color: #333;
+	--body-cap: 430px;
+	--spacing: 8px;
+	--corner: 3px;
+}
+
+body {
+	max-width: var(--body-cap);
+
+	margin: auto;
+
+	background: var(--background);
+	color: var(--body-color);
+	font: Garamond, Georgia, "Times New Roman", Times, serif;
+	font-size: 11pt;
+}
+
+dl {
+	--background: #f9f9f9;
+
+	padding: var(--spacing);
+	border-radius: var(--corner);
+	
+	
+	background: var(--background);
+	font-family: Lucida Grande, Helvetica Neue, Helvetica, Arial, sans-serif;
+}
+
+hr {
+	height: 0px;
+	border: 0.5px solid var(--body-color);
+	opacity: 0.3;
+}
+
+#target {
+	display: flex;
+
+	flex-direction: column;
+}
+</style>
+
+<script>
+const mod = {
+
+	config: {
+		server: '$SERVER_URL',
+		account_1: '$ACCOUNT_1',
+		scope: '$TOKEN_SCOPE',
+		token_rw: '$TOKEN_READ_WRITE',
+		// (await (await fetch(`${ process.env.SERVER_URL }/.well-known/webfinger?resource=acct:${ process.env.USER1 }@${ (new URL(process.env.SERVER_URL)).hostname }`)).json())
+	},
+
+	target: {},
+
+	// actions
+
+	async webfinger () {
+		const params = {
+			resource: `acct:${ mod.config.account_1 }@${ (new URL(mod.config.server)).hostname }`,
+		};
+		const json = await (await fetch(`${ mod.config.server }/.well-known/webfinger?${ new URLSearchParams(params) }`)).json();
+		window.webfinger.innerText = JSON.stringify(mod._webfinger = json.links.filter(e => e.rel === 'remotestorage').shift(), null, ' ');
+
+		if (mod._webfinger) {
+			window.oauth_1.removeAttribute('disabled')
+		}
+	},
+
+	async token_rw () {
+		const meta = mod._webfinger;
+		location.href = `${ meta.properties['auth-endpoint'] }?${ new URLSearchParams({
+			redirect_uri: location.href,
+			scope: `${ mod.config.scope }:rw`,
+			response_type: 'token',
+			client_id: location.href,
+			state: mod.marshal({
+				account: mod.config.account_1,
+				purpose: 'token_rw',
+			}),
+		}) }`
+	},
+
+	reset () {
+		const uri = window.location.toString();
+
+		window.history.replaceState({}, document.title, uri.substring(0, uri.indexOf("#")))
+
+		window.target.innerHTML = '';
+	},
+
+	// utilities
+
+	marshal: state => btoa(JSON.stringify(state)),
+
+	unmarshal: state => JSON.parse(atob(state)),
+
+	process (params) {
+		if (params.state.account && params.state.purpose) {
+			mod.target[params.state.purpose] = params.access_token
+
+			window.target.appendChild(Object.assign(document.createElement('strong'), {
+				innerHTML: 'Add the following line to your <code>.env</code> file',
+			}));
+
+			window.target.appendChild(Object.assign(document.createElement('textarea'), {
+				value: `TOKEN_READ_WRITE="${ params.access_token }"`,
+				disabled: true,
+			}));
+
+			window.target.parentElement.appendChild(Object.assign(document.createElement('button'), {
+				innerText: 'clear state',
+				onclick: mod.reset,
+			}));
+		}
+	},
+
+	// lifecycle
+
+	DOMContentLoaded () {
+		Object.keys(mod.config).forEach(e => {
+			mod.config[e] = mod.config[e].replace('undefined', '');
+		});
+
+		if (!mod.config.scope)
+			mod.config.scope = 'api-test-suite';
+
+		if (!mod.config.token_rw)
+			window.oauth_1.disabled = true;
+
+		const params = Object.fromEntries(new window.URLSearchParams(window.location.hash.slice(1)));
+		
+	  if (params.state)
+	    params.state = mod.unmarshal(params.state);
+
+	  if (params.access_token)
+	  	mod.process(params);
+
+	  Object.keys(mod.config).forEach(e => {
+			window[e].innerText = mod.config[e];
+		});
+	},
+
+};
+
+document.addEventListener('DOMContentLoaded', mod.DOMContentLoaded);
+</script>
+
+</head>
+<body>
+
+<h1>token generator</h1>
+
+<dl>
+
+<dt>SERVER_URL</dt>
+<dd id="server">$SERVER_URL</dd>
+
+<dt>ACCOUNT_1</dt>
+<dd id="account_1">$ACCOUNT_1</dd>
+
+<dt>TOKEN_SCOPE</dt>
+<dd id="scope">$TOKEN_SCOPE</dd>
+
+<dt>TOKEN_READ_WRITE</dt>
+<dd id="token_rw">$TOKEN_READ_WRITE</dd>
+
+<hr>
+
+<dt><button onclick="mod.webfinger()">webfinger</button></dt>
+<dd><pre id="webfinger"></pre></dd>
+
+<dt><button id="oauth_1" onclick="mod.token_rw()" disabled>token_rw</button></dt>
+<dd><pre id="webfinger"></pre></dd>
+
+<div id="target"></div>
+
+</dl>
+
+</body>
+</html>
