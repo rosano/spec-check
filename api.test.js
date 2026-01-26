@@ -1,7 +1,13 @@
-import { beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
+import util from './util.js'
 
-let baseURL;
+const Config = {
+	server: process.env.SERVER_URL,
+	account_1: process.env.ACCOUNT_1,
+	scope: process.env.TOKEN_SCOPE || 'api-test-suite',
+	token_rw: process.env.TOKEN_READ_WRITE,
+};
 
 beforeAll(async () => {
-  baseURL = (await (await fetch(`${ process.env.SERVER_URL }/.well-known/webfinger?resource=acct:${ process.env.USER1 }@${ (new URL(process.env.SERVER_URL)).hostname }`)).json()).links.filter(e => e.rel === 'remotestorage')[0].href
+	Config.baseURL = (await util.webfinger(Config.server, Config.account_1)).href;
 });

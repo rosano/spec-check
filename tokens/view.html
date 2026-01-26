@@ -66,7 +66,9 @@ hr {
 }
 </style>
 
-<script>
+<script type="module">
+import util from './util.js';
+
 const mod = {
 
 	config: {
@@ -74,7 +76,6 @@ const mod = {
 		account_1: '$ACCOUNT_1',
 		scope: '$TOKEN_SCOPE',
 		token_rw: '$TOKEN_READ_WRITE',
-		// (await (await fetch(`${ process.env.SERVER_URL }/.well-known/webfinger?resource=acct:${ process.env.USER1 }@${ (new URL(process.env.SERVER_URL)).hostname }`)).json())
 	},
 
 	target: {},
@@ -174,6 +175,8 @@ const mod = {
 };
 
 document.addEventListener('DOMContentLoaded', mod.DOMContentLoaded);
+
+window.mod = mod;
 </script>
 
 </head>

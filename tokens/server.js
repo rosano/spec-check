@@ -3,6 +3,11 @@ require('dotenv').config();
 const port = process.env.PORT || 3000;
 
 require('http').createServer(function (req, res) {
+  if (req.url === '/util.js') {
+    res.writeHead(200, {'Content-Type': 'text/javascript'});
+    return res.end(require('fs').readFileSync(__dirname + '/../util.js', 'utf8'));  
+  }
+
   res.writeHead(200, {'Content-Type': 'text/html'});
   res.end([
     'SERVER_URL',
