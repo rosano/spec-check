@@ -1,0 +1,9 @@
+{
+  "name": "api-test-suite",
+  "scripts": {
+    "dev": "vitest -r ."
+  },
+  "dependencies": {
+    "vitest": "^4.0.18"
+  }
+}
