@@ -86,7 +86,7 @@ const mod = {
 		window.webfinger.innerText = JSON.stringify(mod._webfinger = await util.webfinger(mod.config.server, mod.config.account_1), null, ' ');
 
 		if (mod._webfinger) {
-			window.oauth_1.removeAttribute('disabled')
+			window.oauth_rw.removeAttribute('disabled')
 		}
 	},
 
@@ -157,7 +157,7 @@ const mod = {
 			mod.config.scope = 'api-test-suite';
 
 		if (!mod.config.token_rw)
-			window.oauth_1.disabled = true;
+			window.oauth_rw.disabled = true;
 
 		const params = Object.fromEntries(new window.URLSearchParams(window.location.hash.slice(1)));
 		
@@ -204,7 +204,7 @@ window.mod = mod;
 	<dt><button onclick="mod.webfinger()">webfinger</button></dt>
 	<dd><pre id="webfinger"></pre></dd>
 
-	<dt><button id="oauth_1" onclick="mod.token_rw()" disabled>token_rw</button></dt>
+	<dt><button id="oauth_rw" onclick="mod.token_rw()" disabled>token_rw</button></dt>
 	<dd><pre id="webfinger"></pre></dd>
 </div>
 
