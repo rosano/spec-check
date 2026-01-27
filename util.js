@@ -24,7 +24,7 @@ const mod = {
     State.baseURL,
     State.scope,
     path,
-  ].join('/'),
+  ].join('/').replace(/\/+/g, '/'),
 
   storage (State) {
     const headers = {
