@@ -17,12 +17,12 @@ npm i
 | - | - |
 | `SERVER_URL` | defaults to `api-test-suite` |
 | `TOKEN_SCOPE` (optional) | defaults to `api-test-suite` |
-| `ACCOUNT_1` | username of test account |
+| `ACCOUNT` | username of test account |
 | `TOKEN_READ_WRITE` | OAuth token with read/write access to the specified `CATEGORY` |
 
 
 1. Create a remoteStorage test account on the server you'd like to verify.
-2. Copy `.env.example` to `.env` to set `SERVER_URL` and `ACCOUNT_1` from the previous step
+2. Copy `.env.example` to `.env` to set `SERVER_URL` and `ACCOUNT` from the previous step
 3. Run the tokens app using the command below to generate the corresponding OAuth tokens:
 
 ```sh

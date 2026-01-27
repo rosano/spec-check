@@ -73,7 +73,7 @@ const mod = {
 
 	config: {
 		server: '$SERVER_URL',
-		account_1: '$ACCOUNT_1',
+		account: '$ACCOUNT',
 		scope: '$TOKEN_SCOPE',
 		token_rw: '$TOKEN_READ_WRITE',
 	},
@@ -83,7 +83,7 @@ const mod = {
 	// actions
 
 	async webfinger () {
-		window.webfinger.innerText = JSON.stringify(mod._webfinger = await util.webfinger(mod.config.server, mod.config.account_1), null, ' ');
+		window.webfinger.innerText = JSON.stringify(mod._webfinger = await util.webfinger(mod.config.server, mod.config.account), null, ' ');
 
 		if (mod._webfinger) {
 			window.oauth_rw.removeAttribute('disabled')
@@ -98,7 +98,7 @@ const mod = {
 			response_type: 'token',
 			client_id: location.href,
 			state: mod.marshal({
-				account: mod.config.account_1,
+				account: mod.config.account,
 				purpose: 'token_rw',
 			}),
 		}) }`
@@ -189,8 +189,8 @@ window.mod = mod;
 <dt>SERVER_URL</dt>
 <dd id="server">$SERVER_URL</dd>
 
-<dt>ACCOUNT_1</dt>
-<dd id="account_1">$ACCOUNT_1</dd>
+<dt>ACCOUNT</dt>
+<dd id="account">$ACCOUNT</dd>
 
 <dt>TOKEN_SCOPE</dt>
 <dd id="scope">$TOKEN_SCOPE</dd>
