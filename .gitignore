@@ -10,8 +10,9 @@ package-lock.json
 
 # LOCAL
 .env*
-!.env-sample
+!.env.example
 config.yml
+
 # RUBY
 vendor
 .bundle
