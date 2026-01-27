@@ -21,6 +21,9 @@ const util = {
       'Content-Type': 'application/json',
     };
 
+    if (State.token_rw)
+      headers['Authorization'] = 'Bearer ' + State.token_rw;
+
     return {
       get: path => fetch(util._url(State, path), {
         headers,

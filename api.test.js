@@ -20,18 +20,24 @@ process.env.SERVER_URL.split(',').forEach(server => {
 
 		describe('unauthorized', () => {
 
+			const unauthorized = () => util.storage(Object.assign(util.clone(State), {
+				token_rw: undefined,
+			}));
+
 			it('handles GET', async () => {
-				const response = await State.storage.get(Math.random().toString());
+				const response = await unauthorized().get(Math.random().toString());
 				expect(response.status).toBe(401);
 			});
 
 			it('handles PUT', async () => {
-				const response = await State.storage.put(Math.random().toString());
+				const response = await unauthorized().put(Math.random().toString(), {
+					[Math.random().toString()]: Math.random().toString(),
+				});
 				expect(response.status).toBe(401);
 			});
 
 			it('handles DELETE', async () => {
-				const response = await State.storage.delete(Math.random().toString());
+				const response = await unauthorized().delete(Math.random().toString());
 				expect(response.status).toBe(401);
 			});
 
