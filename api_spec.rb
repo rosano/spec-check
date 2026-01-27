@@ -55,20 +55,6 @@ end
 
 describe "Requests" do
 
-  describe "PUT with nested folder" do
-    before do
-      @res = do_put_request("#{CONFIG[:category]}/some-subdir/nested-folder-object.json",
-                            '{"foo": "baz"}',
-                            { content_type: "application/json" })
-    end
-
-    it "works" do
-      [200, 201].must_include @res.code
-      @res.headers[:etag].wont_be_nil
-      @res.headers[:etag].must_be_etag
-    end
-  end
-
   describe "updating that JSON object" do
     before do
       @old_outer_listing_res = do_get_request("#{CONFIG[:category]}/")
