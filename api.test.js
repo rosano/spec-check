@@ -81,7 +81,7 @@ process.env.SERVER_URL.split(',').forEach(server => {
 						[Math.random().toString()]: Math.random().toString(),
 					};
 					const put = await State.storage.put(path, item);
-					const res = await State.storage.get(path, item);
+					const res = await State.storage.get(path);
 					expect(res.status).toBe(200)
 					expect(res.headers.get('etag')).toSatisfy(State.version === 0 ? util.isEtag0 : util.isEtag1);
 					expect(res.headers.get('etag')).toBe(put.headers.get('etag'));
