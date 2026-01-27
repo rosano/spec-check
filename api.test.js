@@ -45,24 +45,23 @@ process.env.SERVER_URL.split(',').forEach(server => {
 		});
 
 		describe('create', () => {
-			
-			it('handles without folder', async () => {
-				const res = await State.storage.put(Math.random().toString(), {
-					[Math.random().toString()]: Math.random().toString(),
-				});
-				expect(res.status).toBeOneOf([200, 201])
-				expect(res.headers.get('etag')).toSatisfy(State.version === 0 ? util.isEtag0 : util.isEtag1);
-			});
 
-			it('handles with folder', async () => {
-				const res = await State.storage.put([
+			Object.entries({
+				'without folder': Math.random().toString(),
+				'with folder': [
 					Math.random().toString(),
 					Math.random().toString(),
-				].join('/'), {
-					[Math.random().toString()]: Math.random().toString(),
+				].join('/')
+			}).forEach(([key, path]) => {
+
+				it(`handles ${ key }`, async () => {
+					const res = await State.storage.put(path, {
+						[Math.random().toString()]: Math.random().toString(),
+					});
+					expect(res.status).toBeOneOf([200, 201])
+					expect(res.headers.get('etag')).toSatisfy(State.version === 0 ? util.isEtag0 : util.isEtag1);
 				});
-				expect(res.status).toBeOneOf([200, 201])
-				expect(res.headers.get('etag')).toSatisfy(State.version === 0 ? util.isEtag0 : util.isEtag1);
+
 			});
 
 		});
