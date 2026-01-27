@@ -44,7 +44,7 @@ process.env.SERVER_URL.split(',').forEach(server => {
 
 		});
 
-		describe('PUT JSON object', () => {
+		describe('create', () => {
 			
 			it('handles without folder', async () => {
 				const response = await State.storage.put(Math.random().toString(), {
