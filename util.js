@@ -1,7 +1,18 @@
 const mod = {
 
+  tid: () => Math.random().toString(36).replace('0.', new Date().toJSON().replace(/\D/g, '')),
+
+  document: (key, value) => ({
+    [key || mod.tid()]: value || mod.tid(),
+  }),
+
   isEtag0: string => !string.match(/\D/i),
   isEtag1: string => string.trim().length && string.match(/^([^']|\\')*/i),
+  validEtag: version => version === 0 ? mod.isEtag0 : mod.isEtag1,
+
+  isName0: string => string.match(/[a-zA-Z0-9%-_]/i),
+  isName1: string => string.trim().length && string.match(/[a-zA-Z0-9%-_\.\-\_]/i),
+  validName: version => version === 0 ? mod.isName0 : mod.isName1,
 
   clone: object => Object.assign({}, object),
 

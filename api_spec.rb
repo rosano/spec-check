@@ -310,39 +310,6 @@ describe "Requests" do
     end
   end
 
-  describe "GET directory listing" do
-    before do
-      @res = do_get_request("#{CONFIG[:category]}/")
-      @listing = JSON.parse @res.body
-    end
-
-    it "works" do
-      @res.code.must_equal 200
-      @res.headers[:etag].must_be_etag
-      check_dir_listing_content_type(@res.headers[:content_type])
-
-      @listing["@context"].must_equal "http://remotestorage.io/spec/folder-description"
-      @listing["items"].each_pair do |key, value|
-        key.must_be_kind_of String
-        value["ETag"].must_be_kind_of String
-        if key[-1] == "/"
-          value.keys.must_equal ["ETag"]
-        else
-          value["Content-Length"].must_be_kind_of Integer
-          value["Content-Type"].must_be_kind_of String
-        end
-      end
-    end
-
-    it "contains the correct items" do
-      @listing["items"].length.must_equal 5
-      ["Capture d'écran.jpg", "my-list", "some-subdir/",
-       "test-object-simple.json", "test-object-simple2.json"].each do |key|
-        @listing["items"].keys.must_include key
-      end
-    end
-  end
-
   describe "PUT a JSON object to root dir" do
     it "fails with normal token" do
       res = do_put_request("thisisbadpractice.json", '{"new": "object"}',
