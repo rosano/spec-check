@@ -2,19 +2,21 @@ require('dotenv').config();
 
 const port = process.env.PORT || 3000;
 
-require('http').createServer(function (req, res) {
-  if (req.url === '/util.js') {
-    res.writeHead(200, {'Content-Type': 'text/javascript'});
-    return res.end(require('fs').readFileSync(__dirname + '/../util.js', 'utf8'));  
-  }
+require('http').createServer((req, res) => {
+  if (req.url === '/util.js')
+    return res
+      .writeHead(200, {'Content-Type': 'text/javascript'})
+      .end(require('fs').readFileSync(__dirname + '/../util.js', 'utf8'));  
 
-  res.writeHead(200, {'Content-Type': 'text/html'});
-  res.end([
-    'SERVER_URL',
-    'ACCOUNT',
-    'TOKEN_SCOPE',
-    'TOKEN_READ_WRITE',
-  ].reduce((coll, e) => coll.replaceAll('$' + e, process.env[e]), require('fs').readFileSync(__dirname + '/view.html', 'utf8')));
-}).listen(port);
-
-console.info('Listening on port ' + port);
+  const template = require('fs').readFileSync(require('path').join(__dirname, 'view.html'), 'utf8');
+  return res
+    .writeHead(200, {'Content-Type': 'text/html'})
+    .end([
+      'SERVER_URL',
+      'ACCOUNT',
+      'TOKEN_SCOPE',
+      'TOKEN_READ_WRITE',
+    ].reduce((coll, e) => coll.replaceAll(`$${ e }`, process.env[e]), template));
+})
+.on('listening', () => console.info(`Listening on port ${ port }`))
+.listen(port);
