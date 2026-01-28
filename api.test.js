@@ -76,19 +76,19 @@ process.env.SERVER_URL.split(',').forEach(server => {
 				it(`handles ${ key }`, async () => {
 					const item = util.document();
 					const put = await State.storage.put(path, item);
-					const res = await State.storage.get(path);
-					expect(res.status).toBe(200)
-					expect(res.headers.get('etag')).toSatisfy(util.validEtag(State.version));
-					expect(res.headers.get('etag')).toBe(put.headers.get('etag'));
-					expect(res.headers.get('Content-Type')).toMatch('application/json');
+					const get = await State.storage.get(path);
+					expect(get.status).toBe(200)
+					expect(get.headers.get('etag')).toSatisfy(util.validEtag(State.version));
+					expect(get.headers.get('etag')).toBe(put.headers.get('etag'));
+					expect(get.headers.get('Content-Type')).toMatch('application/json');
 
 					if (State.version >= 2)
-						expect(res.headers.get('Content-Length')).toBe(Buffer.from(JSON.stringify(item)).length.toString());
+						expect(get.headers.get('Content-Length')).toBe(Buffer.from(JSON.stringify(item)).length.toString());
 					
 					if (State.version >= 6)
-						expect(res.headers.get('Cache-control')).toBe('no-cache');
+						expect(get.headers.get('Cache-control')).toBe('no-cache');
 
-					expect(await res.text()).toBe(JSON.stringify(item));
+					expect(await get.text()).toBe(JSON.stringify(item));
 				});
 
 			});
@@ -98,12 +98,12 @@ process.env.SERVER_URL.split(',').forEach(server => {
 		describe('list', () => {
 
 			it.skip('handles empty', async () => {
-				const res = await State.storage.get('/');
-				expect(res.status).toBe(200);
+				const list = await State.storage.get('/');
+				expect(list.status).toBe(200);
 
-				const body = await res.json();
-				expect(res.headers.get('etag')).toSatisfy(util.validEtag(State.version));
-				expect(res.headers.get('Content-Type')).toMatch('application/ld+json');
+				const body = await list.json();
+				expect(list.headers.get('etag')).toSatisfy(util.validEtag(State.version));
+				expect(list.headers.get('Content-Type')).toMatch('application/ld+json');
 
 				if (State.version >= 2)
 					expect(body['@context']).toBe('http://remotestorage.io/spec/folder-description');
@@ -117,13 +117,13 @@ process.env.SERVER_URL.split(',').forEach(server => {
 				const item = util.document();
 				const put = await State.storage.put(path.join(folder, file), item);
 				
-				const res = await State.storage.get(folder);
-				const body = await res.json();
+				const list = await State.storage.get(folder);
+				const body = await list.json();
 				const entries = Object.entries(State.version >= 2 ? body.items : body);
 				expect(entries.length).toEqual(1);
 				entries.forEach(([key, value]) => {
 					expect(key).toBe(file);
-					expect(State.version >= 2 ? value['ETag'] : value).toSatisfy(util.validName(State.version));
+					expect(State.version >= 2 ? value['ETag'] : `"${value}"`).toBe(put.headers.get('etag'));
 
 					if (State.version < 2)
 						return;
@@ -138,13 +138,13 @@ process.env.SERVER_URL.split(',').forEach(server => {
 				const file = util.tid();
 				const put = await State.storage.put(path.join(folder, folder, util.tid()), util.document());
 				
-				const res = await State.storage.get(folder);
-				const body = await res.json();
+				const list = await State.storage.get(folder);
+				const body = await list.json();
 				const entries = Object.entries(State.version >= 2 ? body.items : body);
 				expect(entries.length).toEqual(1);
 				entries.forEach(([key, value]) => {
 					expect(key).toBe(folder);
-					expect(State.version >= 2 ? value.ETag : value).toSatisfy(util.validName(State.version));
+					expect(State.version >= 2 ? value['ETag'] : value).toSatisfy(util.validName(State.version));
 				});
 			});
 
