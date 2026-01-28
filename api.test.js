@@ -27,19 +27,17 @@ process.env.SERVER_URL.split(',').forEach(server => {
 			}));
 
 			it('handles GET', async () => {
-				const res = await unauthorized().get(Math.random().toString());
+				const res = await unauthorized().get(util.tid());
 				expect(res.status).toBe(401);
 			});
 
 			it('handles PUT', async () => {
-				const res = await unauthorized().put(Math.random().toString(), {
-					[Math.random().toString()]: Math.random().toString(),
-				});
+				const res = await unauthorized().put(util.tid(), util.document());
 				expect(res.status).toBe(401);
 			});
 
 			it('handles DELETE', async () => {
-				const res = await unauthorized().delete(Math.random().toString());
+				const res = await unauthorized().delete(util.tid());
 				expect(res.status).toBe(401);
 			});
 
@@ -48,14 +46,12 @@ process.env.SERVER_URL.split(',').forEach(server => {
 		describe('create', () => {
 
 			Object.entries({
-				'without folder': Math.random().toString(),
-				'with folder': path.join(Math.random().toString(), Math.random().toString()),
+				'without folder': util.tid(),
+				'with folder': path.join(util.tid(), util.tid()),
 			}).forEach(([key, path]) => {
 
 				it(`handles ${ key }`, async () => {
-					const res = await State.storage.put(path, {
-						[Math.random().toString()]: Math.random().toString(),
-					});
+					const res = await State.storage.put(path, util.document());
 					expect(res.status).toBeOneOf([200, 201]);
 					expect(res.headers.get('etag')).toSatisfy(util.validEtag(State.version));
 				});
@@ -67,14 +63,12 @@ process.env.SERVER_URL.split(',').forEach(server => {
 		describe('read', () => {
 
 			Object.entries({
-				'without folder': Math.random().toString(),
-				'with folder': path.join(Math.random().toString(), Math.random().toString()),
+				'without folder': util.tid(),
+				'with folder': path.join(util.tid(), util.tid()),
 			}).forEach(([key, path]) => {
 
 				it(`handles ${ key }`, async () => {
-					const item = {
-						[Math.random().toString()]: Math.random().toString(),
-					};
+					const item = util.document();
 					const put = await State.storage.put(path, item);
 					const res = await State.storage.get(path);
 					expect(res.status).toBe(200)
@@ -134,11 +128,9 @@ process.env.SERVER_URL.split(',').forEach(server => {
 			});
 
 			it('handles folder', async () => {
-				const folder = Math.random().toString() + '/';
-				const file = Math.random().toString();
-				const put = await State.storage.put(path.join(folder, folder, Math.random().toString()), {
-					[Math.random().toString()]: Math.random().toString(),
-				});
+				const folder = util.tid() + '/';
+				const file = util.tid();
+				const put = await State.storage.put(path.join(folder, folder, util.tid()), util.document());
 				
 				const res = await State.storage.get(folder);
 				const body = await res.json();
