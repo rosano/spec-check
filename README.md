@@ -23,7 +23,7 @@ npm i
 
 1. Create a remoteStorage test account on the server you'd like to verify.
 2. Copy `.env.example` to `.env` to set `SERVER_URL` and `ACCOUNT` from the previous step
-3. Run the tokens app using the command below to generate the corresponding OAuth tokens:
+3. Run the tokens app using the command below and visit https://localhost:5000 to generate the corresponding OAuth tokens:
 
 ```sh
 npm run tokens
