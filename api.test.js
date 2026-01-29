@@ -12,27 +12,27 @@ process.env.SERVER_URL.split(',').forEach(server => {
 		token_global: process.env.TOKEN_GLOBAL,
 	};
 
-	beforeAll(async () => {
-		State.webfinger = await util.webfinger(State.server, State.account);
-		State.baseURL = State.webfinger.href;
-		State.version = parseInt(State.webfinger.type.match(/draft-dejong-remotestorage-(\d+)/).pop());
-		State.storage = util.storage(State);
-	});
-
-	// afterAll(() => {
-	// 	const erase = async path => {
-	// 		const list = await State.storage.get(path);
-	// 		const body = await list.json();
-	// 		const entries = Object.entries(State.version >= 2 ? body.items : body);
-	// 		return Promise.all(entries.map(([key, value]) => {
-	// 			const _path = path + key;
-	// 			return _path.endsWith('/') ? erase(_path) : State.storage.delete(_path);
-	// 		}));
-	// 	};
-	// 	return erase('/');
-	// });
-
 	suite(new URL(server).host, () => {
+
+		beforeAll(async () => {
+			State.webfinger = await util.webfinger(State.server, State.account);
+			State.baseURL = State.webfinger.href;
+			State.version = parseInt(State.webfinger.type.match(/draft-dejong-remotestorage-(\d+)/).pop());
+			State.storage = util.storage(State);
+		});
+
+		// afterAll(() => {
+		// 	const erase = async path => {
+		// 		const list = await State.storage.get(path);
+		// 		const body = await list.json();
+		// 		const entries = Object.entries(State.version >= 2 ? body.items : body);
+		// 		return Promise.all(entries.map(([key, value]) => {
+		// 			const _path = path + key;
+		// 			return _path.endsWith('/') ? erase(_path) : State.storage.delete(_path);
+		// 		}));
+		// 	};
+		// 	return erase('/');
+		// });
 
 		suite('unauthorized', () => {
 
