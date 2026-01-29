@@ -4,22 +4,22 @@ import util from './util.js'
 
 process.env.SERVER_URL.split(',').forEach(server => {
 
+	const State = {
+		server,
+		account: process.env.ACCOUNT,
+		scope: process.env.TOKEN_SCOPE || 'api-test-suite',
+		token_rw: process.env.TOKEN_READ_WRITE,
+		token_global: process.env.TOKEN_GLOBAL,
+	};
+
+	beforeAll(async () => {
+		State.webfinger = await util.webfinger(State.server, State.account);
+		State.baseURL = State.webfinger.href;
+		State.version = parseInt(State.webfinger.type.match(/draft-dejong-remotestorage-(\d+)/).pop());
+		State.storage = util.storage(State);
+	});
+
 	describe(new URL(server).host, () => {
-
-		const State = {
-			server,
-			account: process.env.ACCOUNT,
-			scope: process.env.TOKEN_SCOPE || 'api-test-suite',
-			token_rw: process.env.TOKEN_READ_WRITE,
-			token_global: process.env.TOKEN_GLOBAL,
-		};
-
-		beforeAll(async () => {
-			State.webfinger = await util.webfinger(State.server, State.account);
-			State.baseURL = State.webfinger.href;
-			State.version = parseInt(State.webfinger.type.match(/draft-dejong-remotestorage-(\d+)/).pop());
-			State.storage = util.storage(State);
-		});
 
 		describe('unauthorized', () => {
 
