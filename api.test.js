@@ -97,7 +97,7 @@ process.env.SERVER_URL.split(',').forEach(server => {
 
 		describe('list', () => {
 
-			it.skip('handles empty', async () => {
+			it.todo('handles empty', async () => {
 				const list = await State.storage.get('/');
 				expect(list.status).toBe(200);
 
