@@ -61,7 +61,7 @@ process.env.SERVER_URL.split(',').forEach(server => {
 
 		describe('unauthorized', () => {
 
-			['GET', 'PUT', 'DELETE'].forEach(method => {
+			['HEAD', 'GET', 'PUT', 'DELETE'].forEach(method => {
 
 				it(`handles ${ method }`, async () => {
 					const res = await util.storage(Object.assign(util.clone(State), {
