@@ -27,8 +27,8 @@ process.env.SERVER_URL.split(',').forEach(server => {
 		// 		const body = await list.json();
 		// 		const entries = Object.entries(State.version >= 2 ? body.items : body);
 		// 		return Promise.all(entries.map(([key, value]) => {
-		// 			const _path = path + key;
-		// 			return _path.endsWith('/') ? erase(_path) : State.storage.delete(_path);
+		// 			const path = path + key;
+		// 			return path.endsWith('/') ? erase(path) : State.storage.delete(path);
 		// 		}));
 		// 	};
 		// 	return erase('/');
@@ -101,9 +101,9 @@ process.env.SERVER_URL.split(',').forEach(server => {
 			describe('If-None-Match header', () => {
 
 				it('returns 412 if exists', async () => {
-					const _path = join(util.tid(), util.tid());
-					await State.storage.put(_path, util.document());
-					const put = await State.storage.put(_path, util.document(), {
+					const path = join(util.tid(), util.tid());
+					await State.storage.put(path, util.document());
+					const put = await State.storage.put(path, util.document(), {
 						'If-None-Match': '*',
 					});
 					expect(put.status).toBe(412);
@@ -159,9 +159,9 @@ process.env.SERVER_URL.split(',').forEach(server => {
 			describe('If-None-Match header', () => {
 
 				it('returns 304 if single tag matches', async () => {
-					const _path = join(util.tid(), util.tid());
-					const put = await State.storage.put(_path, util.document());
-					const get = await State.storage.get(_path, {
+					const path = join(util.tid(), util.tid());
+					const put = await State.storage.put(path, util.document());
+					const get = await State.storage.get(path, {
 						'If-None-Match': put.headers.get('etag'),
 					});
 					expect(get.status).toBe(304);
@@ -169,9 +169,9 @@ process.env.SERVER_URL.split(',').forEach(server => {
 				});
 
 				it('returns 304 if one of multiple tags matches', async () => {
-					const _path = join(util.tid(), util.tid());
-					const put = await State.storage.put(_path, util.document());
-					const get = await State.storage.get(_path, {
+					const path = join(util.tid(), util.tid());
+					const put = await State.storage.put(path, util.document());
+					const get = await State.storage.get(path, {
 						'If-None-Match': `${ Math.random().toString() },${ put.headers.get('etag') }`,
 					});
 					expect(get.status).toBe(304);
@@ -179,9 +179,9 @@ process.env.SERVER_URL.split(',').forEach(server => {
 				});
 
 				it('returns 304 if no matches', async () => {
-					const _path = join(util.tid(), util.tid());
-					const put = await State.storage.put(_path, util.document());
-					const get = await State.storage.get(_path, {
+					const path = join(util.tid(), util.tid());
+					const put = await State.storage.put(path, util.document());
+					const get = await State.storage.get(path, {
 						'If-None-Match': `${ util.tid() },${ util.tid() }`,
 					});
 					expect(get.status).toBe(200);
@@ -251,20 +251,20 @@ process.env.SERVER_URL.split(',').forEach(server => {
 			Object.entries({
 				'without folder': util.tid(),
 				'with folder': join(util.tid(), util.tid()),
-			}).forEach(([key, _path]) => {
+			}).forEach(([key, path]) => {
 
 				describe(key, () => {
 
 					it('overwrites content', async () => {
-						const put1 = await State.storage.put(_path, util.document());
+						const put1 = await State.storage.put(path, util.document());
 
 						const item = util.document();
-						const put2 = await State.storage.put(_path, item);
+						const put2 = await State.storage.put(path, item);
 						expect(put2.status).toBeOneOf([200, 201]);
 						expect(put2.headers.get('etag')).toSatisfy(util.validEtag(State.version));
 						expect(put2.headers.get('etag')).not.toBe(put1.headers.get('etag'));
 						
-						const get = await State.storage.get(_path);
+						const get = await State.storage.get(path);
 						expect(get.headers.get('etag')).toBe(put2.headers.get('etag'));
 						
 						if (State.version >= 2)
@@ -274,18 +274,18 @@ process.env.SERVER_URL.split(',').forEach(server => {
 					});
 
 					it('changes folder etags', async () => {
-						const put1 = await State.storage.put(_path, util.document());
+						const put1 = await State.storage.put(path, util.document());
 
-						const folder = dirname(_path) + '/';
+						const folder = dirname(path) + '/';
 						const list1 = await State.storage.get(folder);
 
-						const put2 = await State.storage.put(_path, util.document());
+						const put2 = await State.storage.put(path, util.document());
 						
 						const list2 = await State.storage.get(folder);
 						expect(list2.headers.get('etag')).not.toBe(list1.headers.get('etag'));
 
 						const body = await list2.json();
-						const entry = (State.version >= 2 ? body.items : body)[basename(_path)];
+						const entry = (State.version >= 2 ? body.items : body)[basename(path)];
 						expect(State.version >= 2 ? entry['ETag'] : `"${entry}"`).toBe(put2.headers.get('etag'));
 					});
 
@@ -303,18 +303,18 @@ process.env.SERVER_URL.split(',').forEach(server => {
 				});
 
 				it('returns 412 if no match', async () => {
-					const _path = join(util.tid(), util.tid());
-					await State.storage.put(_path, util.document());
-					const put = await State.storage.put(_path, util.document(), {
+					const path = join(util.tid(), util.tid());
+					await State.storage.put(path, util.document());
+					const put = await State.storage.put(path, util.document(), {
 						'If-Match': Math.random().toString(),
 					});
 					expect(put.status).toBe(412);
 				});
 
 				it('updates the object', async () => {
-					const _path = join(util.tid(), util.tid());
-					const put1 = await State.storage.put(_path, util.document());
-					const put2 = await State.storage.put(_path, util.document(), {
+					const path = join(util.tid(), util.tid());
+					const put1 = await State.storage.put(path, util.document());
+					const put2 = await State.storage.put(path, util.document(), {
 						'If-Match': put1.headers.get('etag'),
 					});
 					expect(put2.status).toBeOneOf([200, 201]);
@@ -331,31 +331,31 @@ process.env.SERVER_URL.split(',').forEach(server => {
 			Object.entries({
 				'without folder': util.tid(),
 				'with folder': join(util.tid(), util.tid()),
-			}).forEach(([key, _path]) => {
+			}).forEach(([key, path]) => {
 
 				describe(key, () => {
 
 					it('removes', async () => {
-						const put = await State.storage.put(_path, util.document());
+						const put = await State.storage.put(path, util.document());
 
-						const del = await State.storage.delete(_path);
+						const del = await State.storage.delete(path);
 						expect(del.status).toBeOneOf([200, 204]);
 						
 						if (State.version >= 2)
 							expect(del.headers.get('etag')).toBe(put.headers.get('etag'));
 
-						const head = await State.storage.head(_path);
+						const head = await State.storage.head(path);
 						expect(head.status).toBe(404);
 					});
 
 					it('changes folder etags', async () => {
-						const put = await State.storage.put(_path, util.document());
-						const put2 = await State.storage.put(_path + util.tid(), util.document());
+						const put = await State.storage.put(path, util.document());
+						const put2 = await State.storage.put(path + util.tid(), util.document());
 
-						const folder = dirname(_path) + '/';
+						const folder = dirname(path) + '/';
 						const list1 = await State.storage.get(folder);
 
-						await State.storage.delete(_path);
+						await State.storage.delete(path);
 						const list2 = await State.storage.get(folder);
 						expect(list2.headers.get('etag')).not.toBe(list1.headers.get('etag'));
 					});
