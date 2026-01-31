@@ -166,7 +166,7 @@ process.env.SERVER_URL.split(',').forEach(server => {
 				expect(await head.text()).toBe('');
 			});
 
-			describe('non-existing object', () => {
+			describe('non-existing', () => {
 
 				it('returns 404', async () => {
 					const get = await State.storage.get(util.tid());
@@ -361,6 +361,15 @@ process.env.SERVER_URL.split(',').forEach(server => {
 		});
 
 		describe('delete', () => {
+
+			describe('non-existing', () => {
+
+				it('returns 404', async () => {
+					const del = await State.storage.delete(util.tid());
+					expect(del.status).toBe(404)
+				});
+				
+			});
 
 			Object.entries({
 				'without folder': util.tid(),

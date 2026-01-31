@@ -9,14 +9,6 @@ end
 
 describe "DELETE" do
 
-  describe "DELETE a non-existing object" do
-    it "returns a 404" do
-      do_delete_request("#{CONFIG[:category]}/four-oh-four.html") do |response|
-        response.code.must_equal 404
-      end
-    end
-  end
-
   describe "DELETE with non-matching If-Match header" do
     before do
       do_delete_request("#{CONFIG[:category]}/test-object-simple2.json", {if_match: %Q("invalid")}) do |response|
