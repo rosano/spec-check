@@ -140,6 +140,20 @@ process.env.SERVER_URL.split(',').forEach(server => {
 				
 			});
 
+			describe('PUT with Content-Range', () => {
+
+				// https://tools.ietf.org/html/rfc7231#section-4.3.4
+
+				it('returns 400', async () => {
+					const put = await State.storage.put(join(util.tid(), util.tid()), Math.random().toString(), {
+						'Content-Range': 'bytes 0-3/3',
+						'Content-Type': 'text/plain',
+					});
+					expect(put.status).toBe(State.version >= 2 ? 400 : 200);
+				});
+				
+			});
+
 		});
 
 		describe('read', () => {
@@ -478,6 +492,8 @@ process.env.SERVER_URL.split(',').forEach(server => {
 			});
 
 		});
+
+		
 
 	});
 

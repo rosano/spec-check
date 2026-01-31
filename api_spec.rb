@@ -7,16 +7,6 @@ def check_dir_listing_content_type(content_type)
   end
 end
 
-describe "PUT with Content-Range" do
-  it "returns a 400" do
-    # https://tools.ietf.org/html/rfc7231#section-4.3.4
-    do_put_request("#{CONFIG[:category]}/some-subdir/nested-folder-object.json",
-                   'sup', {content_range: "bytes 0-3/3", content_type: "text/plain"}) do |res|
-      res.code.must_equal 400
-    end
-  end
-end
-
 describe "files" do
   
   describe "PUT a JPG image" do
