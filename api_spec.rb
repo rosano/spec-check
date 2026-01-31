@@ -7,53 +7,6 @@ def check_dir_listing_content_type(content_type)
   end
 end
 
-describe "DELETE" do
-
-  describe "DELETE with non-matching If-Match header" do
-    before do
-      do_delete_request("#{CONFIG[:category]}/test-object-simple2.json", {if_match: %Q("invalid")}) do |response|
-        @res = response
-      end
-    end
-
-    it "does not delete the object" do
-      @res.code.must_equal 412
-
-      do_head_request("#{CONFIG[:category]}/test-object-simple2.json") do |response|
-        response.code.must_equal 200
-      end
-    end
-  end
-
-  describe "DELETE with matching If-Match header" do
-    before do
-      etag = do_head_request("#{CONFIG[:category]}/test-object-simple2.json").headers[:etag]
-      @res = do_delete_request("#{CONFIG[:category]}/test-object-simple2.json", {if_match: etag})
-    end
-
-    it "deletes the object" do
-      [200, 204].must_include @res.code
-
-      do_head_request("#{CONFIG[:category]}/test-object-simple2.json") do |response|
-        response.code.must_equal 404
-      end
-    end
-  end
-
-  describe "DELETE with If-Match header to non-existing object" do
-    before do
-      do_delete_request("#{CONFIG[:category]}/four-oh-four.json", {if_match: %Q("match me")}) do |response|
-        @res = response
-      end
-    end
-
-    it "returns 412" do
-      @res.code.must_equal 412
-    end
-  end
-  
-end
-
 describe "PUT with same name as existing directory" do
   it "returns a 409" do
     do_put_request("#{CONFIG[:category]}/some-subdir", '', {content_type: "text/plain"}) do |res|

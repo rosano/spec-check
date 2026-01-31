@@ -416,6 +416,45 @@ process.env.SERVER_URL.split(',').forEach(server => {
 
 			});
 
+			describe('If-Match header', () => {
+
+				it('returns 412 if does not match', async () => {
+					const path = util.tid();
+					await State.storage.put(path, util.document());
+
+					const del = await State.storage.delete(path, {
+						'If-Match': Math.random().toString(),
+					});
+					expect(del.status).toBe(412);
+
+					const head = await State.storage.head(path);
+					expect(head.status).toBe(200);
+				});
+
+				it('returns 412 if does not exist', async () => {
+					const path = util.tid();
+
+					const del = await State.storage.delete(path, {
+						'If-Match': Math.random().toString(),
+					});
+					expect(del.status).toBe(412);
+				});
+
+				it('deletes object', async () => {
+					const path = util.tid();
+					const put = await State.storage.put(path, util.document());
+
+					const del = await State.storage.delete(path, {
+						'If-Match': put.headers.get('etag'),
+					});
+					expect(del.status).toBeOneOf([200, 204]);
+
+					const head = await State.storage.head(path);
+					expect(head.status).toBe(404);
+				});
+				
+			});
+
 		});
 
 	});

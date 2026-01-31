@@ -61,8 +61,8 @@ const mod = {
         method: 'PUT',
         body: JSON.stringify(body),
       }),
-      delete: path => mod._fetch(mod._url(State, path), {
-        headers,
+      delete: (path, _headers = {}) => mod._fetch(mod._url(State, path), {
+        headers: Object.assign(mod.clone(headers), _headers),
         method: 'DELETE',
       }),
       head: path => mod._fetch(mod._url(State, path), {
