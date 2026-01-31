@@ -57,22 +57,6 @@ describe "Requests" do
     end
   end
 
-  describe "HEAD a JSON object" do
-    before do
-      @res = do_head_request("#{CONFIG[:category]}/test-object-simple.json")
-    end
-
-    it "works" do
-      [200, 204].must_include @res.code
-      @res.headers[:etag].wont_be_nil
-      @res.headers[:etag].must_be_etag
-      @res.headers[:content_type].must_equal "application/json"
-      # Content-Length must match the correct length if present but it's optional
-      @res.headers[:content_length].must_equal "102" if @res.headers[:content_length]
-      @res.body.must_be_empty
-    end
-  end
-
   describe "PUT a JPG image" do
     before do
       @res = do_put_request("#{CONFIG[:category]}/Capture d'écran.jpg",

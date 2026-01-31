@@ -147,6 +147,25 @@ process.env.SERVER_URL.split(',').forEach(server => {
 
 			});
 
+			it('HEAD', async () => {
+				const path = util.tid();
+				const item = util.document();
+				const put = await State.storage.put(path, item);
+				const head = await State.storage.head(path);
+				expect(head.status).toBeOneOf([200, 204])
+				expect(head.headers.get('etag')).toSatisfy(util.validEtag(State.version));
+				expect(head.headers.get('etag')).toBe(put.headers.get('etag'));
+				expect(head.headers.get('Content-Type')).toMatch('application/json');
+
+				if (State.version >= 2)
+					expect(head.headers.get('Content-Length')).toBe(Buffer.from(JSON.stringify(item)).length.toString());
+				
+				if (State.version >= 6)
+					expect(head.headers.get('Cache-control')).toBe('no-cache');
+
+				expect(await head.text()).toBe('');
+			});
+
 			describe('non-existing object', () => {
 
 				it('returns 404', async () => {
