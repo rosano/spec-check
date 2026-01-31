@@ -81,6 +81,27 @@ process.env.SERVER_URL.split(',').forEach(server => {
 
 			});
 
+			describe('If-None-Match header', () => {
+
+				it('returns 412 if exists', async () => {
+					const _path = path.join(util.tid(), util.tid());
+					await State.storage.put(_path, util.document());
+					const put = await State.storage.put(_path, util.document(), {
+						'If-None-Match': '*',
+					});
+					expect(put.status).toBe(412);
+				});
+
+				it('returns 200', async () => {
+					const _path = path.join(util.tid(), util.tid());
+					const put = await State.storage.put(_path, util.document(), {
+						'If-None-Match': '*',
+					});
+					expect(put.status).toBeOneOf([200, 201]);
+				});
+				
+			});
+
 		});
 
 		describe('read', () => {

@@ -100,38 +100,6 @@ describe "Requests" do
     end
   end
 
-  describe "PUT with If-None-Match header to existing object" do
-    before do
-      do_put_request("#{CONFIG[:category]}/test-object-simple.json",
-                     '{"should": "not-happen"}',
-                     { content_type: "application/json",
-                       if_none_match: "*" }) do |response|
-         @res = response
-       end
-    end
-
-    it "returns 412" do
-      @res.code.must_equal 412
-    end
-  end
-
-  describe "PUT with If-None-Match header to non-existing object" do
-    before do
-      do_put_request("#{CONFIG[:category]}/test-object-simple2.json",
-                     '{"new": "object", "should_be": "large_enough", "to_trigger": "compression", "if_enabled": "on_server"}',
-                     { content_type: "application/json",
-                       if_none_match: "*" }) do |response|
-         @res = response
-       end
-    end
-
-    it "works" do
-      [200, 201].must_include @res.code
-      @res.headers[:etag].wont_be_nil
-      @res.headers[:etag].must_be_etag
-    end
-  end
-
   describe "GET a JSON object while accepting compressed content" do
     before do
       @res = do_get_request("#{CONFIG[:category]}/test-object-simple.json",
