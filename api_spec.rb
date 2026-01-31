@@ -7,56 +7,152 @@ def check_dir_listing_content_type(content_type)
   end
 end
 
-describe "Requests" do
+describe "listing" do
 
-  describe "PUT with same name as existing directory" do
-    it "returns a 409" do
-      do_put_request("#{CONFIG[:category]}/some-subdir", '', {content_type: "text/plain"}) do |res|
-        res.code.must_equal 409
-      end
-    end
-  end
-
-  describe "PUT with Content-Range" do
-    it "returns a 400" do
-      # https://tools.ietf.org/html/rfc7231#section-4.3.4
-      do_put_request("#{CONFIG[:category]}/some-subdir/nested-folder-object.json",
-                     'sup', {content_range: "bytes 0-3/3", content_type: "text/plain"}) do |res|
-        res.code.must_equal 400
-      end
-    end
-  end
-
-  describe "PUT with same directory name as existing object" do
+  describe "GET directory listing with If-None-Match header" do
     before do
-      do_put_request("#{CONFIG[:category]}/my-list", '', {content_type: "text/plain"})
+      @etag = do_head_request("#{CONFIG[:category]}/").headers[:etag]
+      do_get_request("#{CONFIG[:category]}/", { if_none_match: @etag }) do |response|
+        @res = response
+      end
     end
 
-    it "returns a 409" do
-      do_put_request("#{CONFIG[:category]}/my-list/item", '', {content_type: "text/plain"}) do |res|
-        res.code.must_equal 409
-      end
+    it "returns 304 with empty body when ETag matches" do
+      @res.code.must_equal 304
+      @res.body.must_be_empty
     end
   end
 
-  describe "GET a JSON object while accepting compressed content" do
+  describe "GET directory listing with multiple ETags in If-None-Match header" do
     before do
-      @res = do_get_request("#{CONFIG[:category]}/test-object-simple.json",
-                            { accept_encoding: 'gzip, deflate, br' })
+      @etag = do_head_request("#{CONFIG[:category]}/").headers[:etag]
+      do_get_request("#{CONFIG[:category]}/", { if_none_match: %Q("r2d2c3po", #{@etag}) }) do |response|
+        @res = response
+      end
+    end
+
+    it "returns 304 when one ETag matches" do
+      @res.code.must_equal 304
+      @res.body.must_be_empty
+    end
+  end
+
+  describe "GET empty directory listing" do
+    before do
+      @res = do_get_request("#{CONFIG[:category]}/does-not-exist/")
+      @listing = JSON.parse @res.body
     end
 
     it "works" do
       @res.code.must_equal 200
-      @res.headers[:content_encoding].must_be_nil
-      @res.headers[:etag].wont_be_nil
-      @res.headers[:etag].must_be_etag
-      @res.headers[:content_type].must_equal "application/json"
-      @res.headers[:content_length].must_equal "102"
-      @res.headers[:cache_control].must_equal "no-cache"
-      @res.body.must_equal '{"new": "object", "should_be": "large_enough", "to_trigger": "compression", "if_enabled": "on_server"}'
+
+      @listing["@context"].must_equal "http://remotestorage.io/spec/folder-description"
+      @listing["items"].must_equal({})
     end
   end
 
+  describe "HEAD directory listing" do
+    before do
+      @res = do_head_request("#{CONFIG[:category]}/")
+    end
+
+    it "works" do
+      [200, 204].must_include @res.code
+      @res.headers[:etag].must_be_etag
+      check_dir_listing_content_type(@res.headers[:content_type])
+      @res.body.must_equal ""
+    end
+  end
+
+end
+
+describe "DELETE" do
+
+  describe "DELETE a non-existing object" do
+    it "returns a 404" do
+      do_delete_request("#{CONFIG[:category]}/four-oh-four.html") do |response|
+        response.code.must_equal 404
+      end
+    end
+  end
+
+  describe "DELETE with non-matching If-Match header" do
+    before do
+      do_delete_request("#{CONFIG[:category]}/test-object-simple2.json", {if_match: %Q("invalid")}) do |response|
+        @res = response
+      end
+    end
+
+    it "does not delete the object" do
+      @res.code.must_equal 412
+
+      do_head_request("#{CONFIG[:category]}/test-object-simple2.json") do |response|
+        response.code.must_equal 200
+      end
+    end
+  end
+
+  describe "DELETE with matching If-Match header" do
+    before do
+      etag = do_head_request("#{CONFIG[:category]}/test-object-simple2.json").headers[:etag]
+      @res = do_delete_request("#{CONFIG[:category]}/test-object-simple2.json", {if_match: etag})
+    end
+
+    it "deletes the object" do
+      [200, 204].must_include @res.code
+
+      do_head_request("#{CONFIG[:category]}/test-object-simple2.json") do |response|
+        response.code.must_equal 404
+      end
+    end
+  end
+
+  describe "DELETE with If-Match header to non-existing object" do
+    before do
+      do_delete_request("#{CONFIG[:category]}/four-oh-four.json", {if_match: %Q("match me")}) do |response|
+        @res = response
+      end
+    end
+
+    it "returns 412" do
+      @res.code.must_equal 412
+    end
+  end
+  
+end
+
+describe "PUT with same name as existing directory" do
+  it "returns a 409" do
+    do_put_request("#{CONFIG[:category]}/some-subdir", '', {content_type: "text/plain"}) do |res|
+      res.code.must_equal 409
+    end
+  end
+end
+
+describe "PUT with same directory name as existing object" do
+  before do
+    do_put_request("#{CONFIG[:category]}/my-list", '', {content_type: "text/plain"})
+  end
+
+  it "returns a 409" do
+    do_put_request("#{CONFIG[:category]}/my-list/item", '', {content_type: "text/plain"}) do |res|
+      res.code.must_equal 409
+    end
+  end
+end
+
+describe "PUT with Content-Range" do
+  it "returns a 400" do
+    # https://tools.ietf.org/html/rfc7231#section-4.3.4
+    do_put_request("#{CONFIG[:category]}/some-subdir/nested-folder-object.json",
+                   'sup', {content_range: "bytes 0-3/3", content_type: "text/plain"}) do |res|
+      res.code.must_equal 400
+    end
+  end
+end
+
+describe "files" do
+  
   describe "PUT a JPG image" do
     before do
       @res = do_put_request("#{CONFIG[:category]}/Capture d'écran.jpg",
@@ -86,18 +182,66 @@ describe "Requests" do
     end
   end
 
-  describe "HEAD directory listing" do
-    before do
-      @res = do_head_request("#{CONFIG[:category]}/")
-    end
+end
 
+describe "read-only token" do
+
+  describe "GET" do
     it "works" do
-      [200, 204].must_include @res.code
-      @res.headers[:etag].must_be_etag
-      check_dir_listing_content_type(@res.headers[:content_type])
-      @res.body.must_equal ""
+      res = do_get_request("#{CONFIG[:category]}/test-object-simple.json",
+                           authorization: "Bearer #{CONFIG[:read_only_token]}")
+
+      res.code.must_equal 200
     end
   end
+
+  describe "HEAD" do
+    it "works" do
+      res = do_head_request("#{CONFIG[:category]}/test-object-simple.json",
+                            authorization: "Bearer #{CONFIG[:read_only_token]}")
+
+      [200, 204].must_include res.code
+      res.body.must_be_empty
+    end
+  end
+
+  describe "PUT" do
+    it "fails" do
+      res = do_put_request("#{CONFIG[:category]}/test-object-simple-test.json",
+                           '{"new": "object"}',
+                           { content_type: "application/json",
+                             authorization: "Bearer #{CONFIG[:read_only_token]}" })
+
+      [401, 403].must_include res.code
+    end
+  end
+
+  describe "DELETE" do
+    it "fails" do
+      res = do_delete_request("#{CONFIG[:category]}/test-object-simple.json",
+                              authorization: "Bearer #{CONFIG[:read_only_token]}")
+
+      [401, 403].must_include res.code
+    end
+  end
+
+end
+
+describe "using base URL of a different user" do
+
+  it "should fail" do
+    ["GET", "PUT", "DELETE"].each do |method|
+      res = do_network_request("#{CONFIG[:category]}/failwhale.png",
+                               method: method,
+                               base_url: CONFIG[:storage_base_url_other])
+
+      [401, 403].must_include res.code
+    end
+  end
+
+end
+
+describe "root directory" do
 
   describe "PUT a JSON object to root dir" do
     it "fails with normal token" do
@@ -174,248 +318,117 @@ describe "Requests" do
     end
   end
 
-  describe "GET directory listing with If-None-Match header" do
-    before do
-      @etag = do_head_request("#{CONFIG[:category]}/").headers[:etag]
-      do_get_request("#{CONFIG[:category]}/", { if_none_match: @etag }) do |response|
-        @res = response
-      end
-    end
+end
 
-    it "returns 304 with empty body when ETag matches" do
-      @res.code.must_equal 304
-      @res.body.must_be_empty
-    end
+describe "GET a JSON object while accepting compressed content" do
+  before do
+    @res = do_get_request("#{CONFIG[:category]}/test-object-simple.json",
+                          { accept_encoding: 'gzip, deflate, br' })
   end
 
-  describe "GET directory listing with multiple ETags in If-None-Match header" do
-    before do
-      @etag = do_head_request("#{CONFIG[:category]}/").headers[:etag]
-      do_get_request("#{CONFIG[:category]}/", { if_none_match: %Q("r2d2c3po", #{@etag}) }) do |response|
-        @res = response
-      end
-    end
-
-    it "returns 304 when one ETag matches" do
-      @res.code.must_equal 304
-      @res.body.must_be_empty
-    end
+  it "works" do
+    @res.code.must_equal 200
+    @res.headers[:content_encoding].must_be_nil
+    @res.headers[:etag].wont_be_nil
+    @res.headers[:etag].must_be_etag
+    @res.headers[:content_type].must_equal "application/json"
+    @res.headers[:content_length].must_equal "102"
+    @res.headers[:cache_control].must_equal "no-cache"
+    @res.body.must_equal '{"new": "object", "should_be": "large_enough", "to_trigger": "compression", "if_enabled": "on_server"}'
   end
+end
 
-  describe "GET empty directory listing" do
-    before do
-      @res = do_get_request("#{CONFIG[:category]}/does-not-exist/")
-      @listing = JSON.parse @res.body
-    end
+describe "public" do
 
+  describe "PUT with a read/write category token" do
     it "works" do
-      @res.code.must_equal 200
+      res = do_put_request("public/#{CONFIG[:category]}/test-object-simple.json",
+                           '{"new": "object"}',
+                           { content_type: "application/json" })
 
-      @listing["@context"].must_equal "http://remotestorage.io/spec/folder-description"
-      @listing["items"].must_equal({})
+      [200, 201].must_include res.code
     end
   end
 
-  describe "using base URL of a different user" do
+  describe "PUT with a read/write category token to wrong category" do
+    it "fails" do
+      res = do_put_request("public/othercategory/test-object-simple.json",
+                           '{"new": "object"}',
+                           { content_type: "application/json" })
 
-    it "should fail" do
-      ["GET", "PUT", "DELETE"].each do |method|
-        res = do_network_request("#{CONFIG[:category]}/failwhale.png",
-                                 method: method,
-                                 base_url: CONFIG[:storage_base_url_other])
-
-        [401, 403].must_include res.code
-      end
+      [401, 403].must_include res.code
     end
-
   end
 
-  describe "using a read-only token" do
+  describe "GET without a token" do
+    it "works" do
+      res = do_get_request("public/#{CONFIG[:category]}/test-object-simple.json",
+                           authorization: nil)
 
-    describe "GET" do
-      it "works" do
-        res = do_get_request("#{CONFIG[:category]}/test-object-simple.json",
-                             authorization: "Bearer #{CONFIG[:read_only_token]}")
-
-        res.code.must_equal 200
-      end
+      res.code.must_equal 200
     end
-
-    describe "HEAD" do
-      it "works" do
-        res = do_head_request("#{CONFIG[:category]}/test-object-simple.json",
-                              authorization: "Bearer #{CONFIG[:read_only_token]}")
-
-        [200, 204].must_include res.code
-        res.body.must_be_empty
-      end
-    end
-
-    describe "PUT" do
-      it "fails" do
-        res = do_put_request("#{CONFIG[:category]}/test-object-simple-test.json",
-                             '{"new": "object"}',
-                             { content_type: "application/json",
-                               authorization: "Bearer #{CONFIG[:read_only_token]}" })
-
-        [401, 403].must_include res.code
-      end
-    end
-
-    describe "DELETE" do
-      it "fails" do
-        res = do_delete_request("#{CONFIG[:category]}/test-object-simple.json",
-                                authorization: "Bearer #{CONFIG[:read_only_token]}")
-
-        [401, 403].must_include res.code
-      end
-    end
-
   end
 
-  describe "in a public folder" do
+  describe "HEAD without a token" do
+    it "works" do
+      res = do_head_request("public/#{CONFIG[:category]}/test-object-simple.json",
+                            authorization: nil)
 
-    describe "PUT with a read/write category token" do
-      it "works" do
-        res = do_put_request("public/#{CONFIG[:category]}/test-object-simple.json",
-                             '{"new": "object"}',
-                             { content_type: "application/json" })
+      [200, 204].must_include res.code
+      res.body.must_be_empty
+    end
+  end
 
-        [200, 201].must_include res.code
-      end
+  describe "PUT without a token" do
+    it "is not allowed" do
+      res = do_put_request("public/#{CONFIG[:category]}/test-object-simple-test.json",
+                           '{"new": "object"}',
+                           { content_type: "application/json",
+                             authorization: nil })
+
+      [401, 403].must_include res.code
+    end
+  end
+
+  describe "GET directory listing without a token" do
+    it "is not allowed" do
+      res = do_get_request("public/#{CONFIG[:category]}/", authorization: nil)
+
+      [401, 403].must_include res.code
     end
 
-    describe "PUT with a read/write category token to wrong category" do
-      it "fails" do
-        res = do_put_request("public/othercategory/test-object-simple.json",
-                             '{"new": "object"}',
-                             { content_type: "application/json" })
+    it "doesn't expose if folder is empty" do
+      res = do_get_request("public/#{CONFIG[:category]}/", authorization: nil)
+      res2 = do_get_request("public/#{CONFIG[:category]}/foo/", authorization: nil)
 
-        [401, 403].must_include res.code
-      end
+      res.code.must_equal res2.code
+      res.headers.must_equal res2.headers
+      res.body.must_equal res2.body
     end
+  end
 
-    describe "GET without a token" do
-      it "works" do
-        res = do_get_request("public/#{CONFIG[:category]}/test-object-simple.json",
-                             authorization: nil)
+  describe "GET directory listing with a read-write category token" do
+    it "works" do
+      res = do_get_request("public/#{CONFIG[:category]}/")
 
-        res.code.must_equal 200
-      end
+      res.code.must_equal 200
     end
+  end
 
-    describe "HEAD without a token" do
-      it "works" do
-        res = do_head_request("public/#{CONFIG[:category]}/test-object-simple.json",
+  describe "DELETE without a token" do
+    it "is not allowed" do
+      res = do_delete_request("public/#{CONFIG[:category]}/test-object-simple.json",
                               authorization: nil)
 
-        [200, 204].must_include res.code
-        res.body.must_be_empty
-      end
-    end
-
-    describe "PUT without a token" do
-      it "is not allowed" do
-        res = do_put_request("public/#{CONFIG[:category]}/test-object-simple-test.json",
-                             '{"new": "object"}',
-                             { content_type: "application/json",
-                               authorization: nil })
-
-        [401, 403].must_include res.code
-      end
-    end
-
-    describe "GET directory listing without a token" do
-      it "is not allowed" do
-        res = do_get_request("public/#{CONFIG[:category]}/", authorization: nil)
-
-        [401, 403].must_include res.code
-      end
-
-      it "doesn't expose if folder is empty" do
-        res = do_get_request("public/#{CONFIG[:category]}/", authorization: nil)
-        res2 = do_get_request("public/#{CONFIG[:category]}/foo/", authorization: nil)
-
-        res.code.must_equal res2.code
-        res.headers.must_equal res2.headers
-        res.body.must_equal res2.body
-      end
-    end
-
-    describe "GET directory listing with a read-write category token" do
-      it "works" do
-        res = do_get_request("public/#{CONFIG[:category]}/")
-
-        res.code.must_equal 200
-      end
-    end
-
-    describe "DELETE without a token" do
-      it "is not allowed" do
-        res = do_delete_request("public/#{CONFIG[:category]}/test-object-simple.json",
-                                authorization: nil)
-
-        [401, 403].must_include res.code
-      end
-    end
-
-    describe "DELETE with a read/write category token" do
-      it "works" do
-        res = do_delete_request("public/#{CONFIG[:category]}/test-object-simple.json")
-
-        [200, 204].must_include res.code
-      end
+      [401, 403].must_include res.code
     end
   end
 
-  describe "DELETE a non-existing object" do
-    it "returns a 404" do
-      do_delete_request("#{CONFIG[:category]}/four-oh-four.html") do |response|
-        response.code.must_equal 404
-      end
-    end
-  end
+  describe "DELETE with a read/write category token" do
+    it "works" do
+      res = do_delete_request("public/#{CONFIG[:category]}/test-object-simple.json")
 
-  describe "DELETE with non-matching If-Match header" do
-    before do
-      do_delete_request("#{CONFIG[:category]}/test-object-simple2.json", {if_match: %Q("invalid")}) do |response|
-        @res = response
-      end
-    end
-
-    it "does not delete the object" do
-      @res.code.must_equal 412
-
-      do_head_request("#{CONFIG[:category]}/test-object-simple2.json") do |response|
-        response.code.must_equal 200
-      end
-    end
-  end
-
-  describe "DELETE with matching If-Match header" do
-    before do
-      etag = do_head_request("#{CONFIG[:category]}/test-object-simple2.json").headers[:etag]
-      @res = do_delete_request("#{CONFIG[:category]}/test-object-simple2.json", {if_match: etag})
-    end
-
-    it "deletes the object" do
-      [200, 204].must_include @res.code
-
-      do_head_request("#{CONFIG[:category]}/test-object-simple2.json") do |response|
-        response.code.must_equal 404
-      end
-    end
-  end
-
-  describe "DELETE with If-Match header to non-existing object" do
-    before do
-      do_delete_request("#{CONFIG[:category]}/four-oh-four.json", {if_match: %Q("match me")}) do |response|
-        @res = response
-      end
-    end
-
-    it "returns 412" do
-      @res.code.must_equal 412
+      [200, 204].must_include res.code
     end
   end
 
