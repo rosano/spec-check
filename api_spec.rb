@@ -255,14 +255,6 @@ describe "Requests" do
     end
   end
 
-  describe "GET a non-existing object" do
-    it "returns a 404" do
-      do_get_request("#{CONFIG[:category]}/four-oh-four.html") do |response|
-        response.code.must_equal 404
-      end
-    end
-  end
-
   describe "HEAD directory listing" do
     before do
       @res = do_head_request("#{CONFIG[:category]}/")

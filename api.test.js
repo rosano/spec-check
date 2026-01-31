@@ -110,6 +110,15 @@ process.env.SERVER_URL.split(',').forEach(server => {
 
 			});
 
+			describe('non-existing object', () => {
+
+				it('returns 404', async () => {
+					const get = await State.storage.get(util.tid());
+					expect(get.status).toBe(404)
+				});
+				
+			});
+
 		});
 
 		describe('list', () => {
