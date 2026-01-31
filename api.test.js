@@ -161,6 +161,15 @@ process.env.SERVER_URL.split(',').forEach(server => {
 					expect(get.status).toBe(304);
 					expect(await get.text()).toBe('');
 				});
+
+				it('returns 304 if no matches', async () => {
+					const _path = path.join(util.tid(), util.tid());
+					const put = await State.storage.put(_path, util.document());
+					const get = await State.storage.get(_path, {
+						'If-None-Match': `${ util.tid() },${ util.tid() }`,
+					});
+					expect(get.status).toBe(200);
+				});
 				
 			});
 
