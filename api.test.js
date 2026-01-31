@@ -1,4 +1,4 @@
-import { suite, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import path from 'path';
 import util from './util.js'
 
@@ -12,7 +12,7 @@ process.env.SERVER_URL.split(',').forEach(server => {
 		token_global: process.env.TOKEN_GLOBAL,
 	};
 
-	suite(new URL(server).host, () => {
+	describe(new URL(server).host, () => {
 
 		beforeAll(async () => {
 			State.webfinger = await util.webfinger(State.server, State.account);
@@ -34,7 +34,7 @@ process.env.SERVER_URL.split(',').forEach(server => {
 		// 	return erase('/');
 		// });
 
-		suite('unauthorized', () => {
+		describe('unauthorized', () => {
 
 			const unauthorized = () => util.storage(Object.assign(util.clone(State), {
 				token_rw: undefined,
@@ -57,7 +57,7 @@ process.env.SERVER_URL.split(',').forEach(server => {
 
 		});
 
-		suite('create', () => {
+		describe('create', () => {
 
 			Object.entries({
 				'without folder': util.tid(),
@@ -83,7 +83,7 @@ process.env.SERVER_URL.split(',').forEach(server => {
 
 		});
 
-		suite('read', () => {
+		describe('read', () => {
 
 			Object.entries({
 				'without folder': util.tid(),
@@ -112,7 +112,7 @@ process.env.SERVER_URL.split(',').forEach(server => {
 
 		});
 
-		suite('list', () => {
+		describe('list', () => {
 
 			it.todo('handles empty', async () => {
 				const list = await State.storage.get('/');
@@ -167,14 +167,14 @@ process.env.SERVER_URL.split(',').forEach(server => {
 
 		});
 
-		suite('update', () => {
+		describe('update', () => {
 
 			Object.entries({
 				'without folder': util.tid(),
 				'with folder': path.join(util.tid(), util.tid()),
 			}).forEach(([key, _path]) => {
 
-				suite(key, () => {
+				describe(key, () => {
 
 					it('overwrites content', async () => {
 						const put1 = await State.storage.put(_path, util.document());
@@ -216,14 +216,14 @@ process.env.SERVER_URL.split(',').forEach(server => {
 
 		});
 
-		suite('delete', () => {
+		describe('delete', () => {
 
 			Object.entries({
 				'without folder': util.tid(),
 				'with folder': path.join(util.tid(), util.tid()),
 			}).forEach(([key, _path]) => {
 
-				suite(key, () => {
+				describe(key, () => {
 
 					it('removes', async () => {
 						const put = await State.storage.put(_path, util.document());
