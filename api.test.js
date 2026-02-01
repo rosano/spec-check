@@ -88,13 +88,13 @@ process.env.SERVER_URL.split(',').forEach(server => {
 					expect(put.headers.get('etag')).toSatisfy(util.validEtag(State.version));
 				});
 
-				it.todo('changes parent etags', async () => {
-					// const list1 = await State.storage.getRoot();
+				it('changes parent etags', async () => {
+					const list1 = await State.storage.get('/');
 
-					// previous test put…
+					const put = await State.storage.put(path, util.document());
 					
-					// const list2 = await State.storage.getRoot();
-					// expect(list2.headers.get('etag')).not.toBe(list1.headers.get('etag'));
+					const list2 = await State.storage.get('/');
+					expect(list2.headers.get('etag')).not.toBe(list1.headers.get('etag'));
 				});
 
 			});
@@ -460,23 +460,18 @@ process.env.SERVER_URL.split(',').forEach(server => {
 
 					it('changes folder etags', async () => {
 						const put = await State.storage.put(path, util.document());
-						const put2 = await State.storage.put(path + util.tid(), util.document());
 
 						const folder = dirname(path) + '/';
-						const list1 = await State.storage.get(folder);
+						const listA1 = await State.storage.get(folder);
+						const listB1 = await State.storage.get('/');
 
 						await State.storage.delete(path);
-						const list2 = await State.storage.get(folder);
-						expect(list2.headers.get('etag')).not.toBe(list1.headers.get('etag'));
-					});
-
-					it.todo('changes parent folder etags', async () => {
-						// continue from previous…
-						// const parent = dirname(folder) + '/';
-						// const list3 = parent === './' ? await State.storage.getRoot() : await State.storage.get();
-						// const body = await list3.json();
-						// const entry = (State.version >= 2 ? body.items : body)[folder];
-						// expect(State.version >= 2 ? entry['ETag'] : `"${entry}"`).toBe(list2.headers.get('etag'));
+						
+						const listA2 = await State.storage.get(folder);
+						expect(listA2.headers.get('etag')).not.toBe(listA1.headers.get('etag'));
+						
+						const listB2 = await State.storage.get('/');
+						expect(listB2.headers.get('etag')).not.toBe(listB1.headers.get('etag'));
 					});
 
 				});
