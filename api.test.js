@@ -295,7 +295,7 @@ process.env.SERVER_URL.split(',').forEach(server => {
 			});
 
 			it('handles file', async () => {
-				const folder = util.tid() + '/';
+				const folder = `${ util.tid() }/`;
 				const file = util.tid();
 				const item = util.document();
 				const put = await State.storage.put(join(folder, file), item);
@@ -317,7 +317,7 @@ process.env.SERVER_URL.split(',').forEach(server => {
 			});
 
 			it('handles subfolder', async () => {
-				const folder = util.tid() + '/';
+				const folder = `${ util.tid() }/`;
 				const file = util.tid();
 				const put = await State.storage.put(join(folder, folder, util.tid()), util.document());
 				
@@ -377,7 +377,7 @@ process.env.SERVER_URL.split(',').forEach(server => {
 					it('changes folder etags', async () => {
 						const put1 = await State.storage.put(path, util.document());
 
-						const folder = dirname(path) + '/';
+						const folder = `${ dirname(path) }/`;
 						const list1 = await State.storage.get(folder);
 
 						const put2 = await State.storage.put(path, util.document());
@@ -461,7 +461,7 @@ process.env.SERVER_URL.split(',').forEach(server => {
 					it('changes folder etags', async () => {
 						const put = await State.storage.put(path, util.document());
 
-						const folder = dirname(path) + '/';
+						const folder = `${ dirname(path) }/`;
 						const listA1 = await State.storage.get(folder);
 						const listB1 = await State.storage.get('/');
 
