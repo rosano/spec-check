@@ -44,7 +44,7 @@ process.env.SERVER_URL.split(',').forEach(server => {
 
 				it(`handles ${ method }`, async () => {
 					const origin = util.link();
-					const res = await State.storage.options(Math.random().toString(), {
+					const res = await State.storage.options(util.tid(), {
 						'Access-Control-Request-Method': method,
 						origin,
 						referer: origin,
@@ -76,7 +76,7 @@ process.env.SERVER_URL.split(',').forEach(server => {
 
 			});
 
-		});		
+		});
 
 		describe('other user', () => {
 
@@ -92,7 +92,7 @@ process.env.SERVER_URL.split(',').forEach(server => {
 
 			});
 
-		});		
+		});
 
 		describe('read-only token', () => {
 
@@ -348,7 +348,7 @@ process.env.SERVER_URL.split(',').forEach(server => {
 				expect(list.headers.get('Content-Type')).toMatch('application/ld+json');
 			});
 
-			it('handles file', async () => {
+			it('handles folder', async () => {
 				const folder = `${ util.tid() }/`;
 				const file = util.tid();
 				const item = util.document();
