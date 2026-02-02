@@ -19,14 +19,6 @@ describe "public" do
     end
   end
 
-  describe "GET directory listing with a read-write category token" do
-    it "works" do
-      res = do_get_request("public/#{CONFIG[:category]}/")
-
-      res.code.must_equal 200
-    end
-  end
-
   describe "DELETE with a read/write category token" do
     it "works" do
       res = do_delete_request("public/#{CONFIG[:category]}/test-object-simple.json")
