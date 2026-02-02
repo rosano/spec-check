@@ -573,7 +573,7 @@ process.env.SERVER_URL.split(',').forEach(server => {
 
 		});
 
-		describe('root directory', () => {
+		describe('root folder', () => {
 
 			describe('scope token', () => {
 
@@ -637,7 +637,7 @@ process.env.SERVER_URL.split(',').forEach(server => {
 
 		});
 
-		describe('public', () => {
+		describe('public folder', () => {
 
 			['HEAD', 'GET'].forEach(method => {
 
