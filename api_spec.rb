@@ -9,16 +9,6 @@ end
 
 describe "public" do
 
-  describe "PUT with a read/write category token" do
-    it "works" do
-      res = do_put_request("public/#{CONFIG[:category]}/test-object-simple.json",
-                           '{"new": "object"}',
-                           { content_type: "application/json" })
-
-      [200, 201].must_include res.code
-    end
-  end
-
   describe "PUT with a read/write category token to wrong category" do
     it "fails" do
       res = do_put_request("public/othercategory/test-object-simple.json",

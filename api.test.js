@@ -639,7 +639,7 @@ process.env.SERVER_URL.split(',').forEach(server => {
 
 		describe('public folder', () => {
 
-			describe('without token', () => {
+			describe('with no token', () => {
 
 				['HEAD', 'GET'].forEach(method => {
 
@@ -650,7 +650,6 @@ process.env.SERVER_URL.split(',').forEach(server => {
 							scope: `public/${ State.scope }`,
 							token: State.token_read_write,
 						})).put(path, item);
-						expect(put.status).toBeOneOf([200, 201]);
 
 						const res = await util.storage(Object.assign(util.clone(State), {
 							scope: `public/${ State.scope }`,
@@ -704,6 +703,20 @@ process.env.SERVER_URL.split(',').forEach(server => {
 						expect(res.status).toBeOneOf([401, 403]);
 					});
 
+				});
+
+			});
+
+			describe('with token', () => {
+
+				it('accepts PUT', async () => {
+					const path = util.tid();
+					const item = util.document();
+					const put = await util.storage(Object.assign(util.clone(State), {
+						scope: `public/${ State.scope }`,
+						token: State.token_read_write,
+					})).put(path, item);
+					expect(put.status).toBeOneOf([200, 201]);
 				});
 
 			});
