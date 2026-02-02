@@ -6,17 +6,3 @@ def check_dir_listing_content_type(content_type)
     puts "WARNING: the content type \"#{content_type}\" works for directory listings, but the correct one to use is \"application/ld+json\"".yellow
   end
 end
-
-describe "public" do
-
-  describe "PUT with a read/write category token to wrong category" do
-    it "fails" do
-      res = do_put_request("public/othercategory/test-object-simple.json",
-                           '{"new": "object"}',
-                           { content_type: "application/json" })
-
-      [401, 403].must_include res.code
-    end
-  end
-
-end

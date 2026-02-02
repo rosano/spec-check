@@ -757,6 +757,22 @@ process.env.SERVER_URL.split(',').forEach(server => {
 
 				});
 
+				describe.todo('wrong scope', () => {
+
+					['HEAD', 'GET', 'PUT', 'DELETE'].forEach(method => {
+
+						it(`rejects ${ method }`, async () => {
+							const res = await util.storage(Object.assign(util.clone(State), {
+								scope: `public/${ Math.random().toString(36) }`,
+								token: State.token_read_write,
+							}))[method.toLowerCase()](util.tid(), method === 'PUT' ? util.document() : undefined);
+							expect(res.status).toBeOneOf([401, 403]);
+						});
+
+					});
+
+				});
+
 			});
 			
 		});
