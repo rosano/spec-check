@@ -685,6 +685,25 @@ process.env.SERVER_URL.split(',').forEach(server => {
 
 			});
 
+			['PUT', 'DELETE'].forEach(method => {
+
+				it(`rejects ${ method }`, async () => {
+					const path = util.tid();
+					const item = util.document();
+					const put = await util.storage(Object.assign(util.clone(State), {
+						scope: `public/${ State.scope }`,
+						token: State.token_read_write,
+					})).put(path, item);
+					
+					const res = await util.storage(Object.assign(util.clone(State), {
+						scope: `public/${ State.scope }`,
+						token: undefined,
+					}))[method.toLowerCase()](path, method === 'PUT' ? util.document() : undefined);
+					expect(res.status).toBeOneOf([401, 403]);
+				});
+
+			});
+
 		});
 
 	});

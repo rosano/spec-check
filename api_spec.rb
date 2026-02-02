@@ -29,31 +29,11 @@ describe "public" do
     end
   end
 
-  describe "PUT without a token" do
-    it "is not allowed" do
-      res = do_put_request("public/#{CONFIG[:category]}/test-object-simple-test.json",
-                           '{"new": "object"}',
-                           { content_type: "application/json",
-                             authorization: nil })
-
-      [401, 403].must_include res.code
-    end
-  end
-
   describe "GET directory listing with a read-write category token" do
     it "works" do
       res = do_get_request("public/#{CONFIG[:category]}/")
 
       res.code.must_equal 200
-    end
-  end
-
-  describe "DELETE without a token" do
-    it "is not allowed" do
-      res = do_delete_request("public/#{CONFIG[:category]}/test-object-simple.json",
-                              authorization: nil)
-
-      [401, 403].must_include res.code
     end
   end
 
