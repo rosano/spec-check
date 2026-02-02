@@ -643,7 +643,7 @@ process.env.SERVER_URL.split(',').forEach(server => {
 
 				['HEAD', 'GET'].forEach(method => {
 
-					it(`accepts file ${ method }`, async () => {
+					it(`accepts ${ method } file`, async () => {
 						const path = util.tid();
 						const item = util.document();
 						const put = await util.storage(Object.assign(util.clone(State), {
@@ -660,7 +660,7 @@ process.env.SERVER_URL.split(',').forEach(server => {
 						expect(await res.text()).toBe(method === 'HEAD' ? '' : JSON.stringify(item));
 					});
 
-					it(`rejects list ${ method }`, async () => {
+					it(`rejects ${ method } list`, async () => {
 						const folder = `${ util.tid() }/`;
 						const file = util.tid();
 						
@@ -711,7 +711,7 @@ process.env.SERVER_URL.split(',').forEach(server => {
 
 				['HEAD', 'GET'].forEach(method => {
 
-					it(`accepts list ${ method }`, async () => {
+					it(`accepts ${ method } list`, async () => {
 						const folder = `${ util.tid() }/`;
 						const file = util.tid();
 						
