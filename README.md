@@ -1,7 +1,7 @@
 # API test suite for remoteStorage servers
 
 Verify the compatibility of any web server with the [remoteStorage
-spec](http://tools.ietf.org/html/draft-dejong-remotestorage-04)'s REST API, versions 03–05; also valid for later versions but missing specs for some newer features.
+spec](http://tools.ietf.org/html/draft-dejong-remotestorage-05)'s REST API, versions 03–05; also valid for later versions but missing specs for some newer features.
 
 ## Development
 
