@@ -44,7 +44,7 @@ process.env.SERVER_URL.split(',').forEach(server => {
 			['GET', 'PUT', 'DELETE'].forEach(method => {
 
 				it(`handles ${ method }`, async () => {
-					const origin = stub.link();
+					const origin = stub.origin();
 					const res = await State.storage.options(stub.tid(), {
 						'Access-Control-Request-Method': method,
 						origin,

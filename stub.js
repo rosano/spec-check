@@ -6,7 +6,7 @@ const mod = {
     [key || mod.tid()]: value || mod.tid(),
   }),
 
-  link: () => `https://${ Math.random().toString(32) }`,
+  origin: () => `https://${ Math.random().toString(32) }`,
 
 };
 
