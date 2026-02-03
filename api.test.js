@@ -15,6 +15,35 @@ process.env.SERVER_URL.split(',').forEach(server => {
 		token_global: process.env.TOKEN_GLOBAL,
 	};
 
+	const checkHeaders = ({res, item}) => {
+		if (!State.version)
+			throw new Error('State.version not set');
+
+		if (State.version >= 2)
+			expect(res.headers.get('Content-Length')).toBe(Buffer.from(JSON.stringify(item)).length.toString());
+
+		if (State.version <= 5)
+			expect(res.headers.get('Expires')).toBe('0');
+
+		if (State.version >= 6)
+			expect(res.headers.get('Cache-control')).toBe('no-cache');
+		
+	};
+
+	const checkListHeaders = ({entry, item}) => {
+		if (!State.version)
+			throw new Error('State.version not set');
+
+		if (State.version < 2)
+			return;
+
+		if (!item)
+			return;
+
+		expect(entry['Content-Length']).toBe(Buffer.from(JSON.stringify(item)).length);
+		expect(entry['Content-Type']).toBeTypeOf('string');
+	};
+
 	describe(new URL(server).host, () => {
 
 		beforeAll(async () => {
@@ -237,15 +266,13 @@ process.env.SERVER_URL.split(',').forEach(server => {
 					const put = await State.storage.put(path, item);
 					const get = await State.storage.get(path);
 					expect(get.status).toBe(200)
-					expect(get.headers.get('etag')).toSatisfy(util.validEtag(State.version));
 					expect(get.headers.get('etag')).toBe(put.headers.get('etag'));
 					expect(get.headers.get('Content-Type')).toMatch('application/json');
 
-					if (State.version >= 2)
-						expect(get.headers.get('Content-Length')).toBe(Buffer.from(JSON.stringify(item)).length.toString());
-					
-					if (State.version >= 6)
-						expect(get.headers.get('Cache-control')).toBe('no-cache');
+					checkHeaders({
+						res: get,
+						item,
+					});
 
 					expect(await get.text()).toBe(JSON.stringify(item));
 				});
@@ -262,14 +289,10 @@ process.env.SERVER_URL.split(',').forEach(server => {
 				expect(head.headers.get('etag')).toBe(put.headers.get('etag'));
 				expect(head.headers.get('Content-Type')).toMatch('application/json');
 
-				if (State.version >= 2)
-					expect(head.headers.get('Content-Length')).toBe(Buffer.from(JSON.stringify(item)).length.toString());
-				
-				if (State.version <= 5)
-					expect(head.headers.get('Expires')).toBe('0');
-
-				if (State.version >= 6)
-					expect(head.headers.get('Cache-control')).toBe('no-cache');
+				checkHeaders({
+					res: head,
+					item,
+				});
 
 				expect(await head.text()).toBe('');
 			});
@@ -362,30 +385,34 @@ process.env.SERVER_URL.split(',').forEach(server => {
 				const body = await list.json();
 				const entries = Object.entries(State.version >= 2 ? body.items : body);
 				expect(entries.length).toEqual(1);
-				entries.forEach(([key, value]) => {
+				entries.forEach(([key, entry]) => {
 					expect(key).toBe(file);
-					expect(State.version >= 2 ? value['ETag'] : `"${value}"`).toBe(put.headers.get('etag'));
+					expect(State.version >= 2 ? entry['ETag'] : `"${entry}"`).toBe(put.headers.get('etag'));
 
-					if (State.version < 2)
-						return;
-					
-					expect(value['Content-Length']).toBe(Buffer.from(JSON.stringify(item)).length);
-					expect(value['Content-Type']).toBeTypeOf('string');
+					checkListHeaders({
+						entry,
+						item,
+					});
 				});
 			});
 
 			it('handles subfolder', async () => {
 				const folder = `${ stub.tid() }/`;
 				const file = stub.tid();
-				const put = await State.storage.put(join(folder, folder, stub.tid()), stub.document());
+				const item = stub.document();
+				const put = await State.storage.put(join(folder, folder, stub.tid()), item);
 				
 				const list = await State.storage.get(folder);
 				const body = await list.json();
 				const entries = Object.entries(State.version >= 2 ? body.items : body);
 				expect(entries.length).toEqual(1);
-				entries.forEach(([key, value]) => {
+				entries.forEach(([key, entry]) => {
 					expect(key).toBe(folder);
-					expect(State.version >= 2 ? value['ETag'] : value).toSatisfy(util.validName(State.version));
+					expect(State.version >= 2 ? entry['ETag'] : entry).toSatisfy(util.validName(State.version));
+
+					checkListHeaders({
+						entry,
+					});
 				});
 			});
 
@@ -426,8 +453,10 @@ process.env.SERVER_URL.split(',').forEach(server => {
 						const get = await State.storage.get(path);
 						expect(get.headers.get('etag')).toBe(put2.headers.get('etag'));
 						
-						if (State.version >= 2)
-							expect(get.headers.get('Content-Length')).toBe(Buffer.from(JSON.stringify(item)).length.toString());
+						checkHeaders({
+							res: get,
+							item,
+						});
 
 						expect(await get.json()).toEqual(item);
 					});
@@ -660,6 +689,11 @@ process.env.SERVER_URL.split(',').forEach(server => {
 							token: undefined,
 						}))[method.toLowerCase()](path);
 						expect(res.status).toBeOneOf(method === 'HEAD' ? [200, 204] : [200]);
+
+						checkHeaders({
+							res,
+							item,
+						});
 
 						expect(await res.text()).toBe(method === 'HEAD' ? '' : JSON.stringify(item));
 					});
