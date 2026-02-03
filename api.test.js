@@ -34,14 +34,13 @@ process.env.SERVER_URL.split(',').forEach(server => {
 		if (!State.version)
 			throw new Error('State.version not set');
 
-		if (State.version < 2)
-			return;
-
 		if (!item)
 			return;
 
-		expect(entry['Content-Length']).toBe(Buffer.from(JSON.stringify(item)).length);
-		expect(entry['Content-Type']).toBeTypeOf('string');
+		if (State.version >= 2 && item) {
+			expect(entry['Content-Length']).toBe(Buffer.from(JSON.stringify(item)).length);
+			expect(entry['Content-Type']).toBeTypeOf('string');
+		}
 	};
 
 	describe(new URL(server).host, () => {
