@@ -18,8 +18,8 @@ const mod = {
     };
 
     const json = await (await fetch(`${ server }/.well-known/webfinger?${ new URLSearchParams(params) }`)).json();
-    
-    return json.links.filter(e => e.rel === 'remotestorage').shift();
+
+    return json.links.filter(e => ['remotestorage', 'http://tools.ietf.org/id/draft-dejong-remotestorage'].includes(e.rel)).shift();
   },
 
   _fetch () {

@@ -92,7 +92,7 @@ const mod = {
 
 	async token_read_write () {
 		const meta = mod._webfinger;
-		location.href = `${ meta.properties['auth-endpoint'] }?${ new URLSearchParams({
+		location.href = `${ meta.properties['auth-endpoint'] || meta.properties['http://tools.ietf.org/html/rfc6749#section-4.2'] }?${ new URLSearchParams({
 			redirect_uri: location.href,
 			scope: `${ mod.config.scope }:rw`,
 			response_type: 'token',
