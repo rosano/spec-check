@@ -64,19 +64,23 @@ process.env.SERVER_URL.split(',').forEach(server => {
 		});
 
 		// afterAll(() => {
-		// 	const erase = async path => {
-		// 		const list = await State.storage.get(path);
+		// 	const erase = async (path, storage) => {
+		// 		const list = await storage.get(path);
 		// 		const body = await list.json();
 		// 		const entries = Object.entries(State.version >= 2 ? body.items : body);
-		// 		return Promise.all(entries.map(([key, value]) => {
-		// 			const path = path + key;
-		// 			return path.endsWith('/') ? erase(path) : State.storage.delete(path);
+		// 		await Promise.all(entries.map(([key, value]) => {
+		// 			const _path = path + key;
+		// 			return _path.endsWith('/') ? erase(_path, storage) : storage.delete(_path);
 		// 		}));
 		// 	};
-		// 	return erase('/');
+
+		// 	return erase('/', State.storage).then(() => erase('/', util.storage(Object.assign(util.clone(State), {
+		// 			scope: `public/${ State.scope }`,
+		// 			token: State.token_read_write,
+		// 		}))));
 		// });
 
-		describe('OPTIONS', () => {
+		describe.only('OPTIONS', () => {
 
 			['GET', 'PUT', 'DELETE'].forEach(method => {
 
