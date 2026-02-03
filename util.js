@@ -12,14 +12,18 @@ const mod = {
 
   clone: object => Object.assign({}, object),
 
-  async webfinger (server, account) {
-    const params = {
-      resource: `acct:${ account }@${ (new URL(server)).hostname }`,
-    };
+  webfinger: {
 
-    const json = await (await fetch(`${ server }/.well-known/webfinger?${ new URLSearchParams(params) }`)).json();
+    async discover (server, account) {
+      const params = {
+        resource: `acct:${ account }@${ (new URL(server)).hostname }`,
+      };
 
-    return json.links.filter(e => ['remotestorage', 'http://tools.ietf.org/id/draft-dejong-remotestorage'].includes(e.rel)).shift();
+      const json = await (await fetch(`${ server }/.well-known/webfinger?${ new URLSearchParams(params) }`)).json();
+
+      return json.links.filter(e => ['remotestorage', 'http://tools.ietf.org/id/draft-dejong-remotestorage'].includes(e.rel)).shift();
+    },
+
   },
 
   _fetch () {

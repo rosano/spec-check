@@ -83,7 +83,7 @@ const mod = {
 	// actions
 
 	async webfinger () {
-		window.webfinger.innerText = JSON.stringify(mod._webfinger = await util.webfinger(mod.config.server, mod.config.account), null, ' ');
+		window.webfinger.innerText = JSON.stringify(mod._webfinger = await util.webfinger.discover(mod.config.server, mod.config.account), null, ' ');
 
 		if (mod._webfinger) {
 			window.oauth_rw.removeAttribute('disabled')
