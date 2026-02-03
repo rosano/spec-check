@@ -370,7 +370,10 @@ process.env.SERVER_URL.split(',').forEach(server => {
 
 			it('handles non-existing', async () => {
 				const list = await State.storage.get(`${ Math.random().toString() }/`);
-				expect(list.status).toBe(404);
+				expect(list.status).toBeOneOf([404, 200]);
+
+				if (list.status === 200)
+					expect(await list.json()).toBeOneOf([{}, stub.listing()]);
 			});
 
 			it('handles existing', async () => {

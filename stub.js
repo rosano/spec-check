@@ -8,6 +8,11 @@ const mod = {
 
   origin: () => `https://${ Math.random().toString(32) }`,
 
+  listing: () => ({
+    '@context': 'http://remotestorage.io/spec/folder-description',
+    items: {},
+  }),
+
 };
 
 export default mod;
