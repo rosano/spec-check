@@ -80,7 +80,7 @@ process.env.SERVER_URL.split(',').forEach(server => {
 		// 		}))));
 		// });
 
-		describe.only('OPTIONS', () => {
+		describe('OPTIONS', () => {
 
 			['GET', 'PUT', 'DELETE'].forEach(method => {
 
