@@ -34,5 +34,5 @@ npm run tokens
 ### Testing
 
 ```sh
-npm run tests
+npm test
 ```
