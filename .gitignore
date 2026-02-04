@@ -11,7 +11,7 @@ package-lock.json
 # LOCAL
 .env*
 !.env.example
-config.yml
+*.local
 
 # RUBY
 vendor
