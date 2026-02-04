@@ -36,3 +36,9 @@ npm run tokens
 ```sh
 npm test
 ```
+
+Create an alternative environments (like `.env.armadietto`) and run them with
+
+```sh
+NODE_ENV=armadietto npm test
+```

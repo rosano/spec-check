@@ -1,10 +1,9 @@
 import { loadEnv } from 'vite'
 import { defineConfig } from 'vitest/config'
 
-export default defineConfig(({ mode }) => ({
+export default defineConfig(() => ({
   test: {
     hideSkippedTests: true,
-    // mode defines what ".env.{mode}" file to choose if exists
-    env: loadEnv(mode, process.cwd(), ''),
+    env: loadEnv(process.env.NODE_ENV, process.cwd(), ''),
   },
 }));
