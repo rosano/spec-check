@@ -1,3 +1,48 @@
+:root {
+	--background: #eee;
+	--body-color: #333;
+	--body-cap: 630px;
+	--spacing: 8px;
+	--corner: 3px;
+}
+
+body {
+	max-width: var(--body-cap);
+
+	margin: auto;
+
+	background: var(--background);
+	color: var(--body-color);
+	font: Garamond, Georgia, "Times New Roman", Times, serif;
+	font-size: 11pt;
+}
+
+.content {
+	padding: var(--spacing);
+	border-radius: var(--corner);
+	
+	background: #f9f9f9;
+	font-family: Lucida Grande, Helvetica Neue, Helvetica, Arial, sans-serif;
+}
+
+hr {
+	height: 0px;
+	border: 0.5px solid var(--body-color);
+	opacity: 0.3;
+}
+
+#error {
+	padding: var(--spacing);
+	margin: var(--spacing) 0;
+	border-radius: var(--corner);
+
+	background: #fecc66;
+}
+
+.hidden {
+	display: none !important;
+}
+
 #mocha .result {
 	padding-top: 0;
 }
@@ -22,4 +67,9 @@
 
 .progress-contain :not(.progress-element) {
 	display: none !important;
+}
+
+#mocha .test pre {
+	max-width: unset;
+	white-space: break-spaces;
 }

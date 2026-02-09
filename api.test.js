@@ -4,14 +4,18 @@ import util from './util.js'
 import stub from './stub.js'
 import { readFile } from 'node:fs/promises';
 
-const State = {
+const State = {};
+
+const populate = () => Object.assign(State, {
 	server: process.env.SERVER_URL,
 	account: process.env.ACCOUNT,
 	scope: process.env.TOKEN_SCOPE || 'api-test-suite',
 	token_read_write: process.env.TOKEN_READ_WRITE,
 	token_read_only: process.env.TOKEN_READ_ONLY,
 	token_global: process.env.TOKEN_GLOBAL,
-};
+});
+
+populate();
 
 const checkHeaders = ({res, item}) => {
 	if (!State.version)
@@ -51,6 +55,11 @@ const checkListHeaders = ({entry, item}) => {
 };
 
 before(async () => {
+	if (typeof window !== 'undefined')
+		populate();
+
+	console.log(State, process.env);
+
 	State.webfinger = await util.webfinger.discover(State.server, State.account);
 	State.baseURL = State.webfinger.href;
 	State.version = util.webfinger.version(State.webfinger);

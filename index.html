@@ -1,43 +1,107 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>spec-check</title>
+<html>
+<head>
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>spec-check</title>
 
-    <!-- https://stackoverflow.com/questions/1321878/how-to-prevent-favicon-ico-requests -->
-    <link rel="icon" href="data:;base64,=">
+<!-- https://stackoverflow.com/questions/1321878/how-to-prevent-favicon-ico-requests -->
+<link rel="icon" href="data:;base64,=">
 
-    <link rel="stylesheet" href="https://unpkg.com/mocha/mocha.css" />
-    <link rel="stylesheet" href="style.css" />
+<link rel="stylesheet" href="https://unpkg.com/mocha/mocha.css" />
+<link rel="stylesheet" href="style.css" />
 
-    <script src="https://unpkg.com/mocha/mocha.js"></script>
+<script src="https://unpkg.com/mocha/mocha.js"></script>
 
-    <script type="importmap">{
-      "imports": {
-        "chai": "https://unpkg.com/chai@5/chai.js",
-        "path": "./node_modules/path-browserify/index.js",
-        "node:fs/promises": "./browser/fs.js"
-      }
-    }</script>
-    
-    <script type="module" src="./browser/main.js"></script>
+<script type="importmap">{
+  "imports": {
+    "chai": "https://unpkg.com/chai@5/chai.js",
+    "path": "./node_modules/path-browserify/index.js",
+    "node:fs/promises": "./browser/fs.js"
+  }
+}</script>
 
-    <script type="module">
-      import './api.test.js';
-      window.runTests = () => mocha.run();
-    </script>
-  </head>
-  <body>
-    <h1><a href="/">spec-check</a></h1>
+<script type="module" src="./browser/main.js"></script>
 
-    <button onclick="runTests()">run</button>
+<script type="module">
+  import './api.test.js';
+  window.runTests = () => mocha.run();
+</script>
+<script type="module">
+  import util from './util.js';
+  window.util = util;
+</script>
+</head>
+<body>
+<h1><a href="/">spec-check</a></h1>
 
-    <div id="mocha"></div>
-    <script class="mocha-init">
-      mocha.setup('bdd');
-      mocha.checkLeaks();
-    </script>
-  </body>
+<div class="content">
+
+<p>
+  <label>SERVER_URL</label>
+  <input id="server" placeholder="https://5apps.com" />
+</p>
+
+<p>
+  <label>ACCOUNT</label>
+  <input id="account" placeholder="tony" />
+</p>
+
+<p>
+  <label>TOKEN_SCOPE</label>
+  <input id="scope" placeholder="api-test-suite" />
+</p>
+
+<div id="nostate">
+  <hr>
+
+  <button id="webfinger" onclick="mod.webfinger()" disabled>webfinger</button>
+  
+  <pre id="discover"></pre>
+
+  <p>
+    oauth: 
+    <button id="oauth_read_write" onclick="mod.oauth('rw')" disabled>read-write</button>
+    <button id="oauth_read_only" onclick="mod.oauth('r')" disabled>read-only</button>
+    <button id="oauth_global" onclick="mod.oauth('*')" disabled>global</button>
+  </p>
+  
+</div>
+<div id="error" class="hidden"></div>
+
+<hr>
+
+<p>
+  <label>TOKEN_READ_WRITE</label>
+  <input id="token_read_write" type="password" />
+</p>
+
+<p>
+  <label>TOKEN_READ_ONLY</label>
+  <input id="token_read_only" type="password" />
+</p>
+
+<p>
+  <label>TOKEN_GLOBAL</label>
+  <input id="token_global" type="password" />
+</p>
+
+<button id="test" onclick="runTests()" disabled>run tests</button>
+
+<div id="mocha"></div>
+<script class="mocha-init">
+  mocha.setup('bdd');
+  mocha.checkLeaks();
+</script>
+
+<p>
+  <button id="reveal" onclick="mod.reveal()" disabled>reveal/hide tokens</button>
+</p>
+
+<div id="forget"></div>
+
+</div>
+
+</body>
 </html>
