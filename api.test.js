@@ -7,7 +7,7 @@ import fs from 'fs'
 const State = {
 	server: process.env.SERVER_URL,
 	account: process.env.ACCOUNT,
-	scope: process.env.TOKEN_SCOPE || 'api-test-suite',
+	scope: process.env.TOKEN_SCOPE || 'spec-check',
 	token_read_write: process.env.TOKEN_READ_WRITE,
 	token_read_only: process.env.TOKEN_READ_ONLY,
 	token_global: process.env.TOKEN_GLOBAL,
