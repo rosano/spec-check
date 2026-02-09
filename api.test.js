@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { expect } from 'chai';
 import { join, dirname, basename } from 'path';
 import util from './util.js'
 import stub from './stub.js'
@@ -18,17 +18,17 @@ const checkHeaders = ({res, item}) => {
 		throw new Error('State.version not set');
 
 	if (State.version >= 2)
-		expect(res.headers.get('Content-Length')).toBe(Buffer.from(JSON.stringify(item)).length.toString());
+		expect(res.headers.get('Content-Length')).to.equal(Buffer.from(JSON.stringify(item)).length.toString());
 
 	if (State.version <= 5)
-		expect(res.headers.get('Expires')).toBe('0');
+		expect(res.headers.get('Expires')).to.equal('0');
 
 	if (State.version >= 6)
-		expect(res.headers.get('Cache-control')).toBe('no-cache');
+		expect(res.headers.get('Cache-control')).to.equal('no-cache');
 	
 	if (State.version >= 11) {
-		expect(Date.parse(res.headers.get('Last-Modified')) / 10000).toBeCloseTo(Date.now() / 10000, 0);
-		expect(res.headers.get('Last-Modified')).toSatisfy(util.validDate);
+		expect(Date.parse(res.headers.get('Last-Modified'))).to.be.closeTo(Date.now(), 10000);
+		expect(res.headers.get('Last-Modified')).to.satisfy(util.validDate);
 	}
 };
 
@@ -40,17 +40,17 @@ const checkListHeaders = ({entry, item}) => {
 		return;
 
 	if (State.version >= 2 && item) {
-		expect(entry['Content-Length']).toBe(Buffer.from(JSON.stringify(item)).length);
-		expect(entry['Content-Type']).toBeTypeOf('string');
+		expect(entry['Content-Length']).to.equal(Buffer.from(JSON.stringify(item)).length);
+		expect(entry['Content-Type']).to.be.a('string');
 	}
 
 	if (State.version >= 11) {
-		expect(Date.parse(entry['Last-Modified']) / 10000).toBeCloseTo(Date.now() / 10000, 0);
-		expect(entry['Last-Modified']).toSatisfy(util.validDate);
+		expect(Date.parse(entry['Last-Modified'])).to.be.closeTo(Date.now(), 10000);
+		expect(entry['Last-Modified']).to.satisfy(util.validDate);
 	}
 };
 
-beforeAll(async () => {
+before(async () => {
 	State.webfinger = await util.webfinger.discover(State.server, State.account);
 	State.baseURL = State.webfinger.href;
 	State.version = util.webfinger.version(State.webfinger);
@@ -59,7 +59,7 @@ beforeAll(async () => {
 	}));
 });
 
-// afterAll(() => {
+// after(() => {
 // 	const erase = async (path, storage) => {
 // 		const list = await storage.get(path);
 // 		const body = await list.json();
@@ -87,13 +87,13 @@ describe('OPTIONS', () => {
 				origin,
 				referer: origin,
 			});
-			expect(res.status).toBeOneOf([200, 204]);
-			expect(res.headers.get('Access-Control-Allow-Origin')).toMatch(new RegExp(`(\\*|${ origin.replaceAll(':', '\\:').replaceAll('/', '\\/').replaceAll('.', '\\.') })`));
-			expect(res.headers.get('Access-Control-Expose-Headers').split(',').map(e => e.trim())).toContain('ETag');
-			expect(res.headers.get('Access-Control-Allow-Methods').split(',').map(e => e.trim())).toContain(method);
-			expect(await res.text()).toBe('');
+			expect(res.status).to.be.oneOf([200, 204]);
+			expect(res.headers.get('Access-Control-Allow-Origin')).to.match(new RegExp(`(\\*|${ origin.replaceAll(':', '\\:').replaceAll('/', '\\/').replaceAll('.', '\\.') })`));
+			expect(res.headers.get('Access-Control-Expose-Headers').split(',').map(e => e.trim())).to.include('ETag');
+			expect(res.headers.get('Access-Control-Allow-Methods').split(',').map(e => e.trim())).to.include(method);
+			expect(await res.text()).to.equal('');
 			['Authorization', 'Content-Type', 'Origin', 'If-Match', 'If-None-Match'].forEach(header => {
-				expect(res.headers.get('Access-Control-Allow-Headers').split(',').map(e => e.trim())).toContain(header);
+				expect(res.headers.get('Access-Control-Allow-Headers').split(',').map(e => e.trim())).to.include(header);
 			});
 		});
 
@@ -109,7 +109,7 @@ describe('empty token', () => {
 			const res = await util.storage(Object.assign(util.clone(State), {
 				token: undefined,
 			}))[method.toLowerCase()](stub.tid(), method === 'PUT' ? stub.document() : undefined);
-			expect(res.status).toBe(401);
+			expect(res.status).to.equal(401);
 		});
 
 	});
@@ -126,7 +126,7 @@ describe('other user', () => {
 				baseURL: State.baseURL.replace(new RegExp(`\\/${ process.env.ACCOUNT }$`), `/${ handle }`),
 				token: State.token_global,
 			}))[method.toLowerCase()](stub.tid(), method === 'PUT' ? stub.document() : undefined);
-			expect(res.status).toBeOneOf([401, 403]);
+			expect(res.status).to.be.oneOf([401, 403]);
 		});
 
 	});
@@ -145,9 +145,10 @@ describe('read-only token', () => {
 			const res = await util.storage(Object.assign(util.clone(State), {
 				token: State.token_read_only,
 			}))[method.toLowerCase()](path);
-			expect(res.status).toBeOneOf([200, 204]);
 
-			expect(await res.text()).toBe(method === 'HEAD' ? '' : JSON.stringify(item));
+			expect(res.status).to.be.oneOf([200, 204]);
+
+			expect(await res.text()).to.equal(method === 'HEAD' ? '' : JSON.stringify(item));
 		});
 
 	});
@@ -161,7 +162,7 @@ describe('read-only token', () => {
 			const res = await util.storage(Object.assign(util.clone(State), {
 				token: State.token_read_only,
 			}))[method.toLowerCase()](path, method === 'PUT' ? stub.document() : undefined);
-			expect(res.status).toBeOneOf([401, 403]);
+			expect(res.status).to.be.oneOf([401, 403]);
 		});
 
 	});
@@ -177,8 +178,8 @@ describe('create', () => {
 
 		it(`handles ${ key }`, async () => {
 			const put = await State.storage.put(path, stub.document());
-			expect(put.status).toBeOneOf([200, 201]);
-			expect(put.headers.get('etag')).toSatisfy(util.validEtag(State.version));
+			expect(put.status).to.be.oneOf([200, 201]);
+			expect(put.headers.get('etag')).to.satisfy(util.validEtag(State.version));
 		});
 
 		it('changes parent etags', async () => {
@@ -187,7 +188,7 @@ describe('create', () => {
 			const put = await State.storage.put(path, stub.document());
 			
 			const list2 = await State.storage.get('/');
-			expect(list2.headers.get('etag')).not.toBe(list1.headers.get('etag'));
+			expect(list2.headers.get('etag')).not.to.equal(list1.headers.get('etag'));
 		});
 
 	});
@@ -200,14 +201,14 @@ describe('create', () => {
 			const put = await State.storage.put(path, stub.document(), {
 				'If-None-Match': '*',
 			});
-			expect(put.status).toBe(412);
+			expect(put.status).to.equal(412);
 		});
 
 		it('returns 200', async () => {
 			const put = await State.storage.put(join(stub.tid(), stub.tid()), stub.document(), {
 				'If-None-Match': '*',
 			});
-			expect(put.status).toBeOneOf([200, 201]);
+			expect(put.status).to.be.oneOf([200, 201]);
 		});
 		
 	});
@@ -218,7 +219,7 @@ describe('create', () => {
 			const folder = stub.tid();
 			await State.storage.put(join(folder, stub.tid()), stub.document());
 			const put = await State.storage.put(folder, stub.document());
-			expect(put.status).toBe(State.version >= 2 ? 409 : 200);
+			expect(put.status).to.equal(State.version >= 2 ? 409 : 200);
 		});
 		
 	});
@@ -229,7 +230,7 @@ describe('create', () => {
 			const folder = stub.tid();
 			await State.storage.put(folder, stub.document());
 			const put = await State.storage.put(join(folder, stub.tid()), stub.document());
-			expect(put.status).toBe(State.version >= 2 ? 409 : 200);
+			expect(put.status).to.equal(State.version >= 2 ? 409 : 200);
 		});
 		
 	});
@@ -243,7 +244,7 @@ describe('create', () => {
 				'Content-Range': 'bytes 0-3/3',
 				'Content-Type': 'text/plain',
 			});
-			expect(put.status).toBe(State.version >= 2 ? 400 : 200);
+			expect(put.status).to.equal(State.version >= 2 ? 400 : 200);
 		});
 		
 	});
@@ -255,8 +256,8 @@ describe('create', () => {
 			const put = await State.storage.put(path, fs.readFileSync(path), {
 				'Content-Type': 'image/jpeg; charset=binary',
 			});
-			expect(put.status).toBeOneOf([200, 201]);
-			expect(put.headers.get('etag')).toSatisfy(util.validEtag(State.version));
+			expect(put.status).to.be.oneOf([200, 201]);
+			expect(put.headers.get('etag')).to.satisfy(util.validEtag(State.version));
 		});
 		
 	});
@@ -274,16 +275,16 @@ describe('read', () => {
 			const item = stub.document();
 			const put = await State.storage.put(path, item);
 			const get = await State.storage.get(path);
-			expect(get.status).toBe(200)
-			expect(get.headers.get('etag')).toBe(put.headers.get('etag'));
-			expect(get.headers.get('Content-Type')).toMatch('application/json');
+			expect(get.status).to.equal(200)
+			expect(get.headers.get('etag')).to.equal(put.headers.get('etag'));
+			expect(get.headers.get('Content-Type')).to.have.string('application/json');
 
 			checkHeaders({
 				res: get,
 				item,
 			});
 
-			expect(await get.text()).toBe(JSON.stringify(item));
+			expect(await get.text()).to.equal(JSON.stringify(item));
 		});
 
 	});
@@ -293,24 +294,24 @@ describe('read', () => {
 		const item = stub.document();
 		const put = await State.storage.put(path, item);
 		const head = await State.storage.head(path);
-		expect(head.status).toBeOneOf([200, 204])
-		expect(head.headers.get('etag')).toSatisfy(util.validEtag(State.version));
-		expect(head.headers.get('etag')).toBe(put.headers.get('etag'));
-		expect(head.headers.get('Content-Type')).toMatch('application/json');
+		expect(head.status).to.be.oneOf([200, 204])
+		expect(head.headers.get('etag')).to.satisfy(util.validEtag(State.version));
+		expect(head.headers.get('etag')).to.equal(put.headers.get('etag'));
+		expect(head.headers.get('Content-Type')).to.have.string('application/json');
 
 		checkHeaders({
 			res: head,
 			item,
 		});
 
-		expect(await head.text()).toBe('');
+		expect(await head.text()).to.equal('');
 	});
 
 	describe('non-existing', () => {
 
 		it('returns 404', async () => {
 			const get = await State.storage.get(stub.tid());
-			expect(get.status).toBe(404)
+			expect(get.status).to.equal(404)
 		});
 		
 	});
@@ -323,8 +324,8 @@ describe('read', () => {
 			const get = await State.storage.get(path, {
 				'If-None-Match': put.headers.get('etag'),
 			});
-			expect(get.status).toBe(304);
-			expect(await get.text()).toBe('');
+			expect(get.status).to.equal(304);
+			expect(await get.text()).to.equal('');
 		});
 
 		it('returns 304 if one of multiple tags matches', async () => {
@@ -333,8 +334,8 @@ describe('read', () => {
 			const get = await State.storage.get(path, {
 				'If-None-Match': `${ Math.random().toString() },${ put.headers.get('etag') }`,
 			});
-			expect(get.status).toBe(304);
-			expect(await get.text()).toBe('');
+			expect(get.status).to.equal(304);
+			expect(await get.text()).to.equal('');
 		});
 
 		it('returns 304 if no matches', async () => {
@@ -343,7 +344,7 @@ describe('read', () => {
 			const get = await State.storage.get(path, {
 				'If-None-Match': `${ stub.tid() },${ stub.tid() }`,
 			});
-			expect(get.status).toBe(200);
+			expect(get.status).to.equal(200);
 		});
 		
 	});
@@ -357,10 +358,10 @@ describe('read', () => {
 				'Content-Type': 'image/jpeg; charset=binary',
 			});
 			const get = await State.storage.get(path);
-			expect(get.status).toBeOneOf([200, 201]);
-			expect(get.headers.get('etag')).toSatisfy(util.validEtag(State.version));
-			expect(get.headers.get('Content-Type')).toBeOneOf(['image/jpeg', 'image/jpeg; charset=binary']);
-			expect(get.headers.get('Content-Length')).toBe(data.length.toString());
+			expect(get.status).to.be.oneOf([200, 201]);
+			expect(get.headers.get('etag')).to.satisfy(util.validEtag(State.version));
+			expect(get.headers.get('Content-Type')).to.be.oneOf(['image/jpeg', 'image/jpeg; charset=binary']);
+			expect(get.headers.get('Content-Length')).to.equal(data.length.toString());
 		});
 		
 	});
@@ -371,20 +372,20 @@ describe('list', () => {
 
 	it('handles non-existing', async () => {
 		const list = await State.storage.get(`${ Math.random().toString() }/`);
-		expect(list.status).toBeOneOf([404, 200]);
+		expect(list.status).to.be.oneOf([404, 200]);
 
 		if (list.status === 200)
-			expect(await list.json()).toBeOneOf([{}, stub.listing()]);
+			expect(JSON.stringify(await list.json())).to.be.oneOf([{}, stub.listing()].map(JSON.stringify));
 	});
 
 	it('handles existing', async () => {
 		await State.storage.put(stub.tid(), stub.document());
 		
 		const list = await State.storage.head('/');
-		expect(list.status).toBe(200);
+		expect(list.status).to.equal(200);
 
-		expect(list.headers.get('etag')).toSatisfy(util.validEtag(State.version));
-		expect(list.headers.get('Content-Type')).toMatch('application/ld+json');
+		expect(list.headers.get('etag')).to.satisfy(util.validEtag(State.version));
+		expect(list.headers.get('Content-Type')).to.have.string('application/ld+json');
 	});
 
 	it('handles folder', async () => {
@@ -396,10 +397,10 @@ describe('list', () => {
 		const list = await State.storage.get(folder);
 		const body = await list.json();
 		const entries = Object.entries(State.version >= 2 ? body.items : body);
-		expect(entries.length).toEqual(1);
+		expect(entries.length).to.equal(1);
 		entries.forEach(([key, entry]) => {
-			expect(key).toBe(file);
-			expect(`"${ State.version >= 2 ? entry['ETag'] : entry }"`).toBe(put.headers.get('etag'));
+			expect(key).to.equal(file);
+			expect(`"${ State.version >= 2 ? entry['ETag'] : entry }"`).to.equal(put.headers.get('etag'));
 
 			checkListHeaders({
 				entry,
@@ -417,10 +418,10 @@ describe('list', () => {
 		const list = await State.storage.get(folder);
 		const body = await list.json();
 		const entries = Object.entries(State.version >= 2 ? body.items : body);
-		expect(entries.length).toEqual(1);
+		expect(entries.length).to.equal(1);
 		entries.forEach(([key, entry]) => {
-			expect(key).toBe(folder);
-			expect(State.version >= 2 ? entry['ETag'] : entry).toSatisfy(util.validName(State.version));
+			expect(key).to.equal(folder);
+			expect(State.version >= 2 ? entry['ETag'] : entry).to.satisfy(util.validName(State.version));
 
 			checkListHeaders({
 				entry,
@@ -436,8 +437,8 @@ describe('list', () => {
 			const get = await State.storage.get('/', {
 				'If-None-Match': `${ Math.random().toString() },${ head.headers.get('etag') }`,
 			});
-			expect(get.status).toBe(304);
-			expect(await get.text()).toBe('');
+			expect(get.status).to.equal(304);
+			expect(await get.text()).to.equal('');
 		});
 		
 	});
@@ -458,19 +459,19 @@ describe('update', () => {
 
 				const item = stub.document();
 				const put2 = await State.storage.put(path, item);
-				expect(put2.status).toBeOneOf([200, 201]);
-				expect(put2.headers.get('etag')).toSatisfy(util.validEtag(State.version));
-				expect(put2.headers.get('etag')).not.toBe(put1.headers.get('etag'));
+				expect(put2.status).to.be.oneOf([200, 201]);
+				expect(put2.headers.get('etag')).to.satisfy(util.validEtag(State.version));
+				expect(put2.headers.get('etag')).not.to.equal(put1.headers.get('etag'));
 				
 				const get = await State.storage.get(path);
-				expect(get.headers.get('etag')).toBe(put2.headers.get('etag'));
+				expect(get.headers.get('etag')).to.equal(put2.headers.get('etag'));
 				
 				checkHeaders({
 					res: get,
 					item,
 				});
 
-				expect(await get.json()).toEqual(item);
+				expect(await get.json()).to.deep.equal(item);
 			});
 
 			it('changes ancestor etags', async () => {
@@ -482,11 +483,11 @@ describe('update', () => {
 				const put = await State.storage.put(path, stub.document());
 				
 				const list2 = await State.storage.get(folder);
-				expect(list2.headers.get('etag')).not.toBe(list1.headers.get('etag'));
+				expect(list2.headers.get('etag')).not.to.equal(list1.headers.get('etag'));
 
 				const body = await list2.json();
 				const entry = (State.version >= 2 ? body.items : body)[basename(path)];
-				expect(`"${ State.version >= 2 ? entry['ETag'] : entry }"`).toBe(put.headers.get('etag'));
+				expect(`"${ State.version >= 2 ? entry['ETag'] : entry }"`).to.equal(put.headers.get('etag'));
 			});
 
 		});
@@ -499,7 +500,7 @@ describe('update', () => {
 			const put = await State.storage.put(stub.tid(), stub.document(), {
 				'If-Match': Math.random().toString(),
 			});
-			expect(put.status).toBe(412);
+			expect(put.status).to.equal(412);
 		});
 
 		it('returns 412 if no match', async () => {
@@ -508,7 +509,7 @@ describe('update', () => {
 			const put = await State.storage.put(path, stub.document(), {
 				'If-Match': Math.random().toString(),
 			});
-			expect(put.status).toBe(412);
+			expect(put.status).to.equal(412);
 		});
 
 		it('updates the object', async () => {
@@ -517,9 +518,9 @@ describe('update', () => {
 			const put2 = await State.storage.put(path, stub.document(), {
 				'If-Match': put1.headers.get('etag'),
 			});
-			expect(put2.status).toBeOneOf([200, 201]);
-			expect(put2.headers.get('etag')).toSatisfy(util.validEtag(State.version));
-			expect(put2.headers.get('etag')).not.toBe(put1.headers.get('etag'));
+			expect(put2.status).to.be.oneOf([200, 201]);
+			expect(put2.headers.get('etag')).to.satisfy(util.validEtag(State.version));
+			expect(put2.headers.get('etag')).not.to.equal(put1.headers.get('etag'));
 		});
 		
 	});
@@ -532,7 +533,7 @@ describe('delete', () => {
 
 		it('returns 404', async () => {
 			const del = await State.storage.delete(stub.tid());
-			expect(del.status).toBe(404)
+			expect(del.status).to.equal(404)
 		});
 		
 	});
@@ -548,13 +549,13 @@ describe('delete', () => {
 				const put = await State.storage.put(path, stub.document());
 
 				const del = await State.storage.delete(path);
-				expect(del.status).toBeOneOf([200, 204]);
+				expect(del.status).to.be.oneOf([200, 204]);
 				
 				if (State.version >= 2)
-					expect(del.headers.get('etag')).toBe(put.headers.get('etag'));
+					expect(del.headers.get('etag')).to.equal(put.headers.get('etag'));
 
 				const head = await State.storage.head(path);
-				expect(head.status).toBe(404);
+				expect(head.status).to.equal(404);
 			});
 
 			it('changes ancestor etags', async () => {
@@ -567,10 +568,10 @@ describe('delete', () => {
 				await State.storage.delete(path);
 				
 				const listA2 = await State.storage.get(folder);
-				expect(listA2.headers.get('etag')).not.toBe(listA1.headers.get('etag'));
+				expect(listA2.headers.get('etag')).not.to.equal(listA1.headers.get('etag'));
 				
 				const listB2 = await State.storage.get('/');
-				expect(listB2.headers.get('etag')).not.toBe(listB1.headers.get('etag'));
+				expect(listB2.headers.get('etag')).not.to.equal(listB1.headers.get('etag'));
 			});
 
 		});
@@ -586,10 +587,10 @@ describe('delete', () => {
 			const del = await State.storage.delete(path, {
 				'If-Match': Math.random().toString(),
 			});
-			expect(del.status).toBe(412);
+			expect(del.status).to.equal(412);
 
 			const head = await State.storage.head(path);
-			expect(head.status).toBe(200);
+			expect(head.status).to.equal(200);
 		});
 
 		it('returns 412 if does not exist', async () => {
@@ -598,7 +599,7 @@ describe('delete', () => {
 			const del = await State.storage.delete(path, {
 				'If-Match': Math.random().toString(),
 			});
-			expect(del.status).toBe(412);
+			expect(del.status).to.equal(412);
 		});
 
 		it('deletes object', async () => {
@@ -608,10 +609,10 @@ describe('delete', () => {
 			const del = await State.storage.delete(path, {
 				'If-Match': put.headers.get('etag'),
 			});
-			expect(del.status).toBeOneOf([200, 204]);
+			expect(del.status).to.be.oneOf([200, 204]);
 
 			const head = await State.storage.head(path);
-			expect(head.status).toBe(404);
+			expect(head.status).to.equal(404);
 		});
 		
 	});
@@ -630,7 +631,7 @@ describe('root folder', () => {
 					token: State.token_read_write,
 					scope: '/',
 				}))[method.toLowerCase()](path, method === 'PUT' ? stub.document() : undefined);
-				expect(res.status).toBeOneOf([401, 403]);
+				expect(res.status).to.be.oneOf([401, 403]);
 			});
 
 		});
@@ -646,10 +647,10 @@ describe('root folder', () => {
 			}));
 			
 			const list = await storage.head('/');
-			expect(list.status).toBeOneOf([200, 204]);
-			expect(list.headers.get('etag')).toSatisfy(util.validEtag(State.version));
-			expect(list.headers.get('Content-Type')).toMatch('application/ld+json');
-			expect(await list.text()).toMatch('');
+			expect(list.status).to.be.oneOf([200, 204]);
+			expect(list.headers.get('etag')).to.satisfy(util.validEtag(State.version));
+			expect(list.headers.get('Content-Type')).to.have.string('application/ld+json');
+			expect(await list.text()).to.have.string('');
 		});
 
 		['HEAD', 'GET', 'PUT', 'DELETE'].forEach(method => {
@@ -659,11 +660,11 @@ describe('root folder', () => {
 
 				if (method === 'DELETE') {
 					const get = await storage.put(path, stub.document());
-					expect(get.status).toBe(200);
+					expect(get.status).to.equal(200);
 				};
 
 				const res = await storage[method.toLowerCase()](path, method === 'PUT' ? stub.document() : undefined);
-				expect(res.status).toBeOneOf({
+				expect(res.status).to.be.oneOf({
 					HEAD: [200, 204],
 					GET: [200],
 					PUT: [200, 201],
@@ -672,7 +673,7 @@ describe('root folder', () => {
 
 				if (method === 'PUT') {
 					const get = await storage.get(path);
-					expect(get.status).toBe(200);
+					expect(get.status).to.equal(200);
 				};
 			})
 
@@ -700,14 +701,14 @@ describe('public folder', () => {
 					scope: `public/${ State.scope }`,
 					token: undefined,
 				}))[method.toLowerCase()](path);
-				expect(res.status).toBeOneOf(method === 'HEAD' ? [200, 204] : [200]);
+				expect(res.status).to.be.oneOf(method === 'HEAD' ? [200, 204] : [200]);
 
 				checkHeaders({
 					res,
 					item,
 				});
 
-				expect(await res.text()).toBe(method === 'HEAD' ? '' : JSON.stringify(item));
+				expect(await res.text()).to.equal(method === 'HEAD' ? '' : JSON.stringify(item));
 			});
 
 			it(`rejects ${ method } list`, async () => {
@@ -723,15 +724,15 @@ describe('public folder', () => {
 					scope: `public/${ State.scope }`,
 					token: undefined,
 				}))[method.toLowerCase()](folder);
-				expect(list1.status).toBeOneOf([401, 403]);
+				expect(list1.status).to.be.oneOf([401, 403]);
 
 				const list2 = await util.storage(Object.assign(util.clone(State), {
 					scope: `public/${ State.scope }`,
 					token: undefined,
 				}))[method.toLowerCase()]('/');
-				expect(list2.status).toBe(list1.status);
-				expect(list2.headers).toMatchObject(list1.headers);
-				expect(await list2.text()).toBe(await list1.text());
+				expect(list2.status).to.equal(list1.status);
+				expect(list2.headers).to.deep.include(list1.headers);
+				expect(await list2.text()).to.equal(await list1.text());
 			});
 
 		});
@@ -750,7 +751,7 @@ describe('public folder', () => {
 					scope: `public/${ State.scope }`,
 					token: undefined,
 				}))[method.toLowerCase()](path, method === 'PUT' ? stub.document() : undefined);
-				expect(res.status).toBeOneOf([401, 403]);
+				expect(res.status).to.be.oneOf([401, 403]);
 			});
 
 		});
@@ -774,13 +775,13 @@ describe('public folder', () => {
 					scope: `public/${ State.scope }`,
 					token: State.token_read_write,
 				}))[method.toLowerCase()](folder);
-				expect(list1.status).toBe(200);
+				expect(list1.status).to.equal(200);
 
 				const list2 = await util.storage(Object.assign(util.clone(State), {
 					scope: `public/${ State.scope }`,
 					token: State.token_read_write,
 				}))[method.toLowerCase()]('/');
-				expect(list2.status).toBe(list1.status);
+				expect(list2.status).to.equal(list1.status);
 			});
 
 		});
@@ -796,13 +797,13 @@ describe('public folder', () => {
 				})).put(path, item);
 
 				if (method === 'PUT')
-					return expect(put.status).toBeOneOf([200, 201]);
+					return expect(put.status).to.be.oneOf([200, 201]);
 				
 				const del = await util.storage(Object.assign(util.clone(State), {
 					scope: `public/${ State.scope }`,
 					token: State.token_read_write,
 				})).delete(path, method === 'PUT' ? stub.document() : undefined);
-				expect(del.status).toBeOneOf([200, 204]);
+				expect(del.status).to.be.oneOf([200, 204]);
 			});
 
 		});
@@ -816,7 +817,7 @@ describe('public folder', () => {
 						scope: `public/${ Math.random().toString(36) }`,
 						token: State.token_read_write,
 					}))[method.toLowerCase()](stub.tid(), method === 'PUT' ? stub.document() : undefined);
-					expect(res.status).toBeOneOf([401, 403]);
+					expect(res.status).to.be.oneOf([401, 403]);
 				});
 
 			});

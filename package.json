@@ -5,6 +5,7 @@
     "tokens": "nodemon --watch .env --watch ./tokens/server.js ./tokens/server.js"
   },
   "devDependencies": {
-    "mocha": "^11.7.5"
+    "mocha": "^11.7.5",
+    "chai": "^6.2.2"
   }
 }
