@@ -5,7 +5,10 @@
     "tokens": "nodemon --watch .env --watch ./tokens/server.js ./tokens/server.js"
   },
   "devDependencies": {
-    "mocha": "^11.7.5",
-    "chai": "^6.2.2"
+    "chai": "^6.2.2",
+    "mocha": "^11.7.5"
+  },
+  "dependencies": {
+    "path-browserify": "0dataapp/path-browserify-ecma"
   }
 }

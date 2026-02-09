@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import { join, dirname, basename } from 'path';
 import util from './util.js'
 import stub from './stub.js'
-import fs from 'fs'
+import { readFile } from 'node:fs/promises';
 
 const State = {
 	server: process.env.SERVER_URL,
@@ -18,7 +18,7 @@ const checkHeaders = ({res, item}) => {
 		throw new Error('State.version not set');
 
 	if (State.version >= 2)
-		expect(res.headers.get('Content-Length')).to.equal(Buffer.from(JSON.stringify(item)).length.toString());
+		expect(res.headers.get('Content-Length')).to.equal(util.byteLength(JSON.stringify(item)).toString());
 
 	if (State.version <= 5)
 		expect(res.headers.get('Expires')).to.equal('0');
@@ -40,7 +40,7 @@ const checkListHeaders = ({entry, item}) => {
 		return;
 
 	if (State.version >= 2 && item) {
-		expect(entry['Content-Length']).to.equal(Buffer.from(JSON.stringify(item)).length);
+		expect(entry['Content-Length']).to.equal(util.byteLength(JSON.stringify(item)));
 		expect(entry['Content-Type']).to.be.a('string');
 	}
 
@@ -253,7 +253,7 @@ describe('create', () => {
 
 		it('returns 200', async () => {
 			const path = 'image.jpg';
-			const put = await State.storage.put(path, fs.readFileSync(path), {
+			const put = await State.storage.put(path, await readFile(path), {
 				'Content-Type': 'image/jpeg; charset=binary',
 			});
 			expect(put.status).to.be.oneOf([200, 201]);
@@ -353,7 +353,7 @@ describe('read', () => {
 
 		it('returns 200', async () => {
 			const path = 'image.jpg';
-			const data = fs.readFileSync(path);
+			const data = await readFile(path);
 			const put = await State.storage.put(path, data, {
 				'Content-Type': 'image/jpeg; charset=binary',
 			});

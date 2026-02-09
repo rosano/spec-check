@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>spec-check</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- https://stackoverflow.com/questions/1321878/how-to-prevent-favicon-ico-requests -->
+    <link rel="icon" href="data:;base64,=">
+
+    <link rel="stylesheet" href="https://unpkg.com/mocha/mocha.css" />
+    <link rel="stylesheet" href="style.css" />
+
+    <script src="https://unpkg.com/mocha/mocha.js"></script>
+
+    <script type="importmap">{
+      "imports": {
+        "chai": "https://unpkg.com/chai@5/chai.js",
+        "path": "./node_modules/path-browserify/index.js",
+        "node:fs/promises": "./browser/fs.js"
+      }
+    }</script>
+    
+    <script type="module" src="./browser/main.js"></script>
+
+    <script type="module">
+      import './api.test.js';
+      window.runTests = () => mocha.run();
+    </script>
+  </head>
+  <body>
+    <h1><a href="/">spec-check</a></h1>
+
+    <button onclick="runTests()">run</button>
+
+    <div id="mocha"></div>
+    <script class="mocha-init">
+      mocha.setup('bdd');
+      mocha.checkLeaks();
+    </script>
+  </body>
+</html>

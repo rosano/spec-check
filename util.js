@@ -73,6 +73,8 @@ const mod = {
     };
   },
 
+  byteLength: input => typeof Buffer !== 'undefined' ? Buffer.from(input).length : new TextEncoder().encode(input).byteLength,
+
 };
 
 export default mod;
