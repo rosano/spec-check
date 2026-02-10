@@ -1,17 +1,17 @@
 const mod = {
 
-  tid: () => Math.random().toString(36).replace('0.', new Date().toJSON().replace(/\D/g, '')),
+	tid: () => Math.random().toString(36).replace('0.', new Date().toJSON().replace(/\D/g, '')),
 
-  document: (key, value) => ({
-    [key || mod.tid()]: value || mod.tid(),
-  }),
+	document: (key, value) => ({
+		[key || mod.tid()]: value || mod.tid(),
+	}),
 
-  origin: () => `https://${ Math.random().toString(32) }`,
+	origin: () => `https://${ Math.random().toString(32) }`,
 
-  listing: () => ({
-    '@context': 'http://remotestorage.io/spec/folder-description',
-    items: {},
-  }),
+	listing: () => ({
+		'@context': 'http://remotestorage.io/spec/folder-description',
+		items: {},
+	}),
 
 };
 

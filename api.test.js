@@ -5,7 +5,7 @@ import stub from './stub.js';
 import { readFile } from 'node:fs/promises';
 import dotenv from 'dotenv';
 
-dotenv.config({ path: `.env${ process.env.ENV ? `.${ process.env.ENV }` : '' }` })
+dotenv.config({ path: `.env${ process.env.ENV ? `.${ process.env.ENV }` : '' }` });
 
 const State = {};
 
@@ -84,9 +84,9 @@ after(() => {
 	};
 
 	return erase('/', State.storage).then(() => erase('/', util.storage(Object.assign(util.clone(State), {
-			scope: `public/${ State.scope }`,
-			token: State.token_read_write,
-		}))));
+		scope: `public/${ State.scope }`,
+		token: State.token_read_write,
+	}))));
 });
 
 describe('OPTIONS', () => {
@@ -291,7 +291,7 @@ describe('read', () => {
 			const item = stub.document();
 			const put = await State.storage.put(path, item);
 			const get = await State.storage.get(path);
-			expect(get.status).to.equal(200)
+			expect(get.status).to.equal(200);
 			expect(get.headers.get('etag')).to.equal(put.headers.get('etag'));
 			expect(get.headers.get('Content-Type')).to.have.string('application/json');
 
@@ -310,7 +310,7 @@ describe('read', () => {
 		const item = stub.document();
 		const put = await State.storage.put(path, item);
 		const head = await State.storage.head(path);
-		expect(head.status).to.be.oneOf([200, 204])
+		expect(head.status).to.be.oneOf([200, 204]);
 		expect(head.headers.get('etag')).to.satisfy(util.validEtag(State.spec_version));
 		expect(head.headers.get('etag')).to.equal(put.headers.get('etag'));
 		expect(head.headers.get('Content-Type')).to.have.string('application/json');
@@ -327,7 +327,7 @@ describe('read', () => {
 
 		it('returns 404', async () => {
 			const get = await State.storage.get(stub.tid());
-			expect(get.status).to.equal(404)
+			expect(get.status).to.equal(404);
 		});
 		
 	});
@@ -550,7 +550,7 @@ describe('delete', () => {
 
 		it('returns 404', async () => {
 			const del = await State.storage.delete(stub.tid());
-			expect(del.status).to.equal(404)
+			expect(del.status).to.equal(404);
 		});
 		
 	});
@@ -678,7 +678,7 @@ describe('root folder', () => {
 				if (method === 'DELETE') {
 					const get = await storage.put(path, stub.document());
 					expect(get.status).to.equal(200);
-				};
+				}
 
 				const res = await storage[method.toLowerCase()](path, method === 'PUT' ? stub.document() : undefined);
 				expect(res.status).to.be.oneOf({
@@ -691,8 +691,8 @@ describe('root folder', () => {
 				if (method === 'PUT') {
 					const get = await storage.get(path);
 					expect(get.status).to.equal(200);
-				};
-			})
+				}
+			});
 
 		});
 
