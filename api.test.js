@@ -65,7 +65,7 @@ before(async () => {
 		token: State.token_read_write,
 	}));
 
-	if (!State.spec_version)
+	if ([undefined, ''].includes(State.spec_version))
 		State.spec_version = util.webfinger.version(State.webfinger);
 });
 
