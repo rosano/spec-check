@@ -8,7 +8,7 @@ const State = {};
 
 const populate = () => Object.assign(State, {
 	server: process.env.SERVER_URL,
-	account: process.env.ACCOUNT,
+	account_handle: process.env.ACCOUNT_HANDLE,
 	scope: process.env.TOKEN_SCOPE || 'api-test-suite',
 	token_read_write: process.env.TOKEN_READ_WRITE,
 	token_read_only: process.env.TOKEN_READ_ONLY,
@@ -60,7 +60,7 @@ before(async () => {
 
 	console.log(State, process.env);
 
-	State.webfinger = await util.webfinger.discover(State.server, State.account);
+	State.webfinger = await util.webfinger.discover(State.server, State.account_handle);
 	State.baseURL = State.webfinger.href;
 	State.version = util.webfinger.version(State.webfinger);
 	State.storage = util.storage(Object.assign(util.clone(State), {
@@ -132,7 +132,7 @@ describe('other user', () => {
 		it(`rejects ${ method }`, async () => {
 			const handle = Math.random().toString(36).slice(2);
 			const res = await util.storage(Object.assign(util.clone(State), {
-				baseURL: State.baseURL.replace(new RegExp(`\\/${ process.env.ACCOUNT }$`), `/${ handle }`),
+				baseURL: State.baseURL.replace(new RegExp(`\\/${ process.env.ACCOUNT_HANDLE }$`), `/${ handle }`),
 				token: State.token_global,
 			}))[method.toLowerCase()](stub.tid(), method === 'PUT' ? stub.document() : undefined);
 			expect(res.status).to.be.oneOf([401, 403]);

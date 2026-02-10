@@ -7,7 +7,7 @@ const mod = {
   // actions
 
   async webfinger () {
-    window.discover.innerText = JSON.stringify(mod._webfinger = await util.webfinger.discover(mod.config.server, mod.config.account), null, ' ');
+    window.discover.innerText = JSON.stringify(mod._webfinger = await util.webfinger.discover(mod.config.server, mod.config.account_handle), null, ' ');
 
     if (!mod._webfinger)
       return;
@@ -23,7 +23,7 @@ const mod = {
     response_type: 'token',
     client_id: location.href,
     state: mod.marshal({
-      account: mod.config.account,
+      account_handle: mod.config.account_handle,
       permission,
     }),
   }) }`,
@@ -99,9 +99,9 @@ const mod = {
   unmarshal: state => JSON.parse(atob(state)),
 
   process (params) {
-    if (params.state.account !== mod.config.account)
+    if (params.state.account_handle !== mod.config.account_handle)
       return Object.assign(window.error, {
-        innerText: `Account should match '${ mod.config.account }'`,
+        innerText: `Handle should match '${ mod.config.account_handle }'`,
         className: '',
       });
 
@@ -123,7 +123,7 @@ const mod = {
   initialize () {
     mod.config = {
       server: '',
-      account: '',
+      account_handle: '',
       scope: '',
       token_read_write: '',
       token_read_only: '',
@@ -133,7 +133,7 @@ const mod = {
 
   propagate: config => window.process.env = Object.fromEntries(Object.entries(config).map(([key, value]) => [{
       server: 'SERVER_URL',
-      account: 'ACCOUNT',
+      account_handle: 'ACCOUNT_HANDLE',
       scope: 'TOKEN_SCOPE',
       token_read_write: 'TOKEN_READ_WRITE',
       token_read_only: 'TOKEN_READ_ONLY',
