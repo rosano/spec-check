@@ -50,6 +50,14 @@ hr {
 	opacity: 0.3;
 }
 
+pre {
+	font-size: 80%;
+  white-space: break-spaces;
+  background: #eee;
+  padding: var(--spacing);
+	border-radius: var(--corner);
+}
+
 #error {
 	padding: var(--spacing);
 	margin: var(--spacing) 0;

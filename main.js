@@ -8,6 +8,7 @@ const mod = {
 
   async webfinger () {
     window.discover.innerText = JSON.stringify(mod._webfinger = await util.webfinger.discover(mod.config.server, mod.config.account_handle), null, ' ');
+    window.discover.classList.remove('hidden');
 
     if (!mod._webfinger)
       return;

@@ -66,7 +66,7 @@
 
   <button id="webfinger" onclick="mod.webfinger()" disabled>webfinger</button>
   
-  <pre id="discover"></pre>
+  <pre id="discover" class="hidden"></pre>
 
   <p>
     oauth: 
@@ -93,6 +93,11 @@
 <p>
   <label>TOKEN_GLOBAL</label>
   <input id="token_global" type="password" />
+</p>
+
+<p>
+  <label>SPEC_VERSION</label>
+  <input id="spec_version" type="number" />
 </p>
 
 <button id="test" onclick="runTests()" disabled>run tests</button>
