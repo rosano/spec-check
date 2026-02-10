@@ -118,29 +118,6 @@ const mod = {
     window[key].value = params.access_token;
 
     mod.reset();
-
-    // window.target.appendChild(Object.assign(document.createElement('strong'), {
-    //   innerHTML: `Received token with permission '${ params.state.permission }'`,
-    // }));
-
-    // window.target.appendChild(Object.assign(document.createElement('input'), {
-    //   value: params.access_token,
-    //   disabled: true,
-    // }));
-
-    // window.target.appendChild(Object.assign(document.createElement('button'), {
-    //   innerText: 'save',
-    //   onclick: () => {
-        
-    //   },
-    // }));
-
-    // window.target.appendChild(Object.assign(document.createElement('button'), {
-    //   innerText: 'ignore',
-    //   onclick: mod.reset,
-    // }));
-
-    // window.nostate.classList.add('hidden');
   },
 
   initialize () {
