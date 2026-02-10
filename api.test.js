@@ -371,9 +371,10 @@ describe('read', () => {
 		it('returns 200', async () => {
 			const path = 'image.jpg';
 			const data = await readFile(path);
-			const put = await State.storage.put(path, data, {
+			await State.storage.put(path, data, {
 				'Content-Type': 'image/jpeg; charset=binary',
 			});
+			
 			const get = await State.storage.get(path);
 			expect(get.status).to.be.oneOf([200, 201]);
 			expect(get.headers.get('etag')).to.satisfy(util.validEtag(State.spec_version));
