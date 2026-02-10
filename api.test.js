@@ -371,7 +371,7 @@ describe('read', () => {
 			expect(get.status).to.be.oneOf([200, 201]);
 			expect(get.headers.get('etag')).to.satisfy(util.validEtag(State.spec_version));
 			expect(get.headers.get('Content-Type')).to.be.oneOf(['image/jpeg', 'image/jpeg; charset=binary']);
-			expect(get.headers.get('Content-Length')).to.equal(data.length.toString());
+			expect(get.headers.get('Content-Length')).to.equal(util.byteLength(data).toString());
 		});
 		
 	});
