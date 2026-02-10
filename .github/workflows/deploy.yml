@@ -19,10 +19,13 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Build
+        run: bash build.sh
+
       - name: Upload Artifacts
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '/'
+          path: '/build/'
 
   deploy:
     needs: build_site
