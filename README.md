@@ -37,8 +37,8 @@ npm run tokens
 npm test
 ```
 
-Create an alternative environments (like `.env.armadietto`) and run them with
+Create an alternative environments (like `.env.kosmos`) and run them with
 
 ```sh
-NODE_ENV=armadietto npm test
+ENV=kosmos npm test
 ```

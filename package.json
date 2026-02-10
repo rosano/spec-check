@@ -9,6 +9,7 @@
     "mocha": "^11.7.5"
   },
   "dependencies": {
+    "dotenv": "^17.2.4",
     "http-server": "^14.1.1",
     "path-browserify": "0dataapp/path-browserify-ecma"
   }
