@@ -1,6 +1,7 @@
 {
   "name": "api-test-suite",
   "scripts": {
+    "start": "http-server",
     "test": "mocha"
   },
   "devDependencies": {
@@ -8,6 +9,7 @@
     "mocha": "^11.7.5"
   },
   "dependencies": {
+    "http-server": "^14.1.1",
     "path-browserify": "0dataapp/path-browserify-ecma"
   }
 }
