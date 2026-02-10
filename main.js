@@ -16,6 +16,8 @@ const mod = {
     window.oauth_read_write.removeAttribute('disabled');
     window.oauth_read_only.removeAttribute('disabled');
     window.oauth_global.removeAttribute('disabled');
+    
+    window.spec_version.value = util.webfinger.version(mod._webfinger);
   },
 
   oauth: permission => location.href = `${ util.webfinger.auth(mod._webfinger) }?${ new URLSearchParams({

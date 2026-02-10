@@ -13,42 +13,43 @@ const populate = () => Object.assign(State, {
 	token_read_write: process.env.TOKEN_READ_WRITE,
 	token_read_only: process.env.TOKEN_READ_ONLY,
 	token_global: process.env.TOKEN_GLOBAL,
+	spec_version: process.env.SPEC_VERSION,
 });
 
 populate();
 
 const checkHeaders = ({res, item}) => {
-	if (!State.version)
-		throw new Error('State.version not set');
+	if (!State.spec_version)
+		throw new Error('State.spec_version not set');
 
-	if (State.version >= 2)
+	if (State.spec_version >= 2)
 		expect(res.headers.get('Content-Length')).to.equal(util.byteLength(JSON.stringify(item)).toString());
 
-	if (State.version <= 5)
+	if (State.spec_version <= 5)
 		expect(res.headers.get('Expires')).to.equal('0');
 
-	if (State.version >= 6)
+	if (State.spec_version >= 6)
 		expect(res.headers.get('Cache-control')).to.equal('no-cache');
 	
-	if (State.version >= 11) {
+	if (State.spec_version >= 11) {
 		expect(Date.parse(res.headers.get('Last-Modified'))).to.be.closeTo(Date.now(), 10000);
 		expect(res.headers.get('Last-Modified')).to.satisfy(util.validDate);
 	}
 };
 
 const checkListHeaders = ({entry, item}) => {
-	if (!State.version)
-		throw new Error('State.version not set');
+	if (!State.spec_version)
+		throw new Error('State.spec_version not set');
 
 	if (!item)
 		return;
 
-	if (State.version >= 2 && item) {
+	if (State.spec_version >= 2 && item) {
 		expect(entry['Content-Length']).to.equal(util.byteLength(JSON.stringify(item)));
 		expect(entry['Content-Type']).to.be.a('string');
 	}
 
-	if (State.version >= 11) {
+	if (State.spec_version >= 11) {
 		expect(Date.parse(entry['Last-Modified'])).to.be.closeTo(Date.now(), 10000);
 		expect(entry['Last-Modified']).to.satisfy(util.validDate);
 	}
@@ -60,17 +61,19 @@ before(async () => {
 
 	State.webfinger = await util.webfinger.discover(State.server, State.account_handle);
 	State.baseURL = State.webfinger.href;
-	State.version = util.webfinger.version(State.webfinger);
 	State.storage = util.storage(Object.assign(util.clone(State), {
 		token: State.token_read_write,
 	}));
+
+	if (!State.spec_version)
+		State.spec_version = util.webfinger.version(State.webfinger);
 });
 
 after(() => {
 	const erase = async (path, storage) => {
 		const list = await storage.get(path);
 		const body = await list.json();
-		const entries = Object.entries(State.version >= 2 ? body.items : body);
+		const entries = Object.entries(State.spec_version >= 2 ? body.items : body);
 		await Promise.all(entries.map(([key, value]) => {
 			const _path = path + key;
 			return _path.endsWith('/') ? erase(_path, storage) : storage.delete(_path);
@@ -186,7 +189,7 @@ describe('create', () => {
 		it(`handles ${ key }`, async () => {
 			const put = await State.storage.put(path, stub.document());
 			expect(put.status).to.be.oneOf([200, 201]);
-			expect(put.headers.get('etag')).to.satisfy(util.validEtag(State.version));
+			expect(put.headers.get('etag')).to.satisfy(util.validEtag(State.spec_version));
 		});
 
 		it('changes parent etags', async () => {
@@ -226,7 +229,7 @@ describe('create', () => {
 			const folder = stub.tid();
 			await State.storage.put(join(folder, stub.tid()), stub.document());
 			const put = await State.storage.put(folder, stub.document());
-			expect(put.status).to.equal(State.version >= 2 ? 409 : 200);
+			expect(put.status).to.equal(State.spec_version >= 2 ? 409 : 200);
 		});
 		
 	});
@@ -237,7 +240,7 @@ describe('create', () => {
 			const folder = stub.tid();
 			await State.storage.put(folder, stub.document());
 			const put = await State.storage.put(join(folder, stub.tid()), stub.document());
-			expect(put.status).to.equal(State.version >= 2 ? 409 : 200);
+			expect(put.status).to.equal(State.spec_version >= 2 ? 409 : 200);
 		});
 		
 	});
@@ -251,7 +254,7 @@ describe('create', () => {
 				'Content-Range': 'bytes 0-3/3',
 				'Content-Type': 'text/plain',
 			});
-			expect(put.status).to.equal(State.version >= 2 ? 400 : 200);
+			expect(put.status).to.equal(State.spec_version >= 2 ? 400 : 200);
 		});
 		
 	});
@@ -264,7 +267,7 @@ describe('create', () => {
 				'Content-Type': 'image/jpeg; charset=binary',
 			});
 			expect(put.status).to.be.oneOf([200, 201]);
-			expect(put.headers.get('etag')).to.satisfy(util.validEtag(State.version));
+			expect(put.headers.get('etag')).to.satisfy(util.validEtag(State.spec_version));
 		});
 		
 	});
@@ -302,7 +305,7 @@ describe('read', () => {
 		const put = await State.storage.put(path, item);
 		const head = await State.storage.head(path);
 		expect(head.status).to.be.oneOf([200, 204])
-		expect(head.headers.get('etag')).to.satisfy(util.validEtag(State.version));
+		expect(head.headers.get('etag')).to.satisfy(util.validEtag(State.spec_version));
 		expect(head.headers.get('etag')).to.equal(put.headers.get('etag'));
 		expect(head.headers.get('Content-Type')).to.have.string('application/json');
 
@@ -366,7 +369,7 @@ describe('read', () => {
 			});
 			const get = await State.storage.get(path);
 			expect(get.status).to.be.oneOf([200, 201]);
-			expect(get.headers.get('etag')).to.satisfy(util.validEtag(State.version));
+			expect(get.headers.get('etag')).to.satisfy(util.validEtag(State.spec_version));
 			expect(get.headers.get('Content-Type')).to.be.oneOf(['image/jpeg', 'image/jpeg; charset=binary']);
 			expect(get.headers.get('Content-Length')).to.equal(data.length.toString());
 		});
@@ -391,7 +394,7 @@ describe('list', () => {
 		const list = await State.storage.head('/');
 		expect(list.status).to.equal(200);
 
-		expect(list.headers.get('etag')).to.satisfy(util.validEtag(State.version));
+		expect(list.headers.get('etag')).to.satisfy(util.validEtag(State.spec_version));
 		expect(list.headers.get('Content-Type')).to.have.string('application/ld+json');
 	});
 
@@ -403,11 +406,11 @@ describe('list', () => {
 		
 		const list = await State.storage.get(folder);
 		const body = await list.json();
-		const entries = Object.entries(State.version >= 2 ? body.items : body);
+		const entries = Object.entries(State.spec_version >= 2 ? body.items : body);
 		expect(entries.length).to.equal(1);
 		entries.forEach(([key, entry]) => {
 			expect(key).to.equal(file);
-			expect(`"${ State.version >= 2 ? entry['ETag'] : entry }"`).to.equal(put.headers.get('etag'));
+			expect(`"${ State.spec_version >= 2 ? entry['ETag'] : entry }"`).to.equal(put.headers.get('etag'));
 
 			checkListHeaders({
 				entry,
@@ -424,11 +427,11 @@ describe('list', () => {
 		
 		const list = await State.storage.get(folder);
 		const body = await list.json();
-		const entries = Object.entries(State.version >= 2 ? body.items : body);
+		const entries = Object.entries(State.spec_version >= 2 ? body.items : body);
 		expect(entries.length).to.equal(1);
 		entries.forEach(([key, entry]) => {
 			expect(key).to.equal(folder);
-			expect(State.version >= 2 ? entry['ETag'] : entry).to.satisfy(util.validName(State.version));
+			expect(State.spec_version >= 2 ? entry['ETag'] : entry).to.satisfy(util.validName(State.spec_version));
 
 			checkListHeaders({
 				entry,
@@ -467,7 +470,7 @@ describe('update', () => {
 				const item = stub.document();
 				const put2 = await State.storage.put(path, item);
 				expect(put2.status).to.be.oneOf([200, 201]);
-				expect(put2.headers.get('etag')).to.satisfy(util.validEtag(State.version));
+				expect(put2.headers.get('etag')).to.satisfy(util.validEtag(State.spec_version));
 				expect(put2.headers.get('etag')).not.to.equal(put1.headers.get('etag'));
 				
 				const get = await State.storage.get(path);
@@ -493,8 +496,8 @@ describe('update', () => {
 				expect(list2.headers.get('etag')).not.to.equal(list1.headers.get('etag'));
 
 				const body = await list2.json();
-				const entry = (State.version >= 2 ? body.items : body)[basename(path)];
-				expect(`"${ State.version >= 2 ? entry['ETag'] : entry }"`).to.equal(put.headers.get('etag'));
+				const entry = (State.spec_version >= 2 ? body.items : body)[basename(path)];
+				expect(`"${ State.spec_version >= 2 ? entry['ETag'] : entry }"`).to.equal(put.headers.get('etag'));
 			});
 
 		});
@@ -526,7 +529,7 @@ describe('update', () => {
 				'If-Match': put1.headers.get('etag'),
 			});
 			expect(put2.status).to.be.oneOf([200, 201]);
-			expect(put2.headers.get('etag')).to.satisfy(util.validEtag(State.version));
+			expect(put2.headers.get('etag')).to.satisfy(util.validEtag(State.spec_version));
 			expect(put2.headers.get('etag')).not.to.equal(put1.headers.get('etag'));
 		});
 		
@@ -558,7 +561,7 @@ describe('delete', () => {
 				const del = await State.storage.delete(path);
 				expect(del.status).to.be.oneOf([200, 204]);
 				
-				if (State.version >= 2)
+				if (State.spec_version >= 2)
 					expect(del.headers.get('etag')).to.equal(put.headers.get('etag'));
 
 				const head = await State.storage.head(path);
@@ -655,7 +658,7 @@ describe('root folder', () => {
 			
 			const list = await storage.head('/');
 			expect(list.status).to.be.oneOf([200, 204]);
-			expect(list.headers.get('etag')).to.satisfy(util.validEtag(State.version));
+			expect(list.headers.get('etag')).to.satisfy(util.validEtag(State.spec_version));
 			expect(list.headers.get('Content-Type')).to.have.string('application/ld+json');
 			expect(await list.text()).to.have.string('');
 		});
