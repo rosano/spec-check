@@ -1,7 +1,12 @@
-# API test suite for remoteStorage servers
+# spec-check
 
-Verify the compatibility of any web server with the [remoteStorage
-spec](http://tools.ietf.org/html/draft-dejong-remotestorage-11)'s REST API, versions 03–05; also valid for later versions but missing specs for some newer features.
+[remoteStorage REST API](http://tools.ietf.org/html/draft-dejong-remotestorage-22) validator.
+
+https://spec-check.0data.app
+
+The spec version to test comes from the webfinger response by default, but you can also use the browser version to say "test that this server conforms to version X".
+
+Mocha has a `grep` option to filter tests in the browser, for example [public folder with no token](https://spec-check.0data.app/?grep=%5Epublic%20folder%20with%20no%20token%20).
 
 ## Development
 
@@ -13,23 +18,19 @@ npm i
 
 ### Configure environment
 
-| name | description |
-| - | - |
-| `SERVER_URL` | defaults to `api-test-suite` |
-| `TOKEN_SCOPE` (optional) | defaults to `api-test-suite` |
-| `ACCOUNT_HANDLE` | username of test account |
-| `TOKEN_READ_WRITE` | OAuth token with read/write access to the specified `CATEGORY` |
-| `TOKEN_READ_ONLY` | OAuth token with read-only access to the specified `CATEGORY` |
-| `TOKEN_GLOBAL` | OAuth token with read/write access to the root folder |
-
+| name | description | example/default |
+| - | - | - |
+| `SERVER_URL` | server root url | `https://kosmos.org` |
+| `ACCOUNT_HANDLE` | username of test account | `tony` |
+| `TOKEN_SCOPE` (optional) | scope/category to test | `api-test-suite` |
+| `SPEC_VERSION` (optional) | draft version number | `22` |
+| `TOKEN_READ_WRITE` | OAuth token with read/write access to the specified `TOKEN_SCOPE` | … |
+| `TOKEN_READ_ONLY` | OAuth token with read-only access to the specified `TOKEN_SCOPE` | … |
+| `TOKEN_GLOBAL` | OAuth token with read/write access to the root folder | … |
 
 1. Create a remoteStorage test account on the server you'd like to verify.
 2. Copy `.env.example` to `.env` to set `SERVER_URL` and `ACCOUNT_HANDLE` from the previous step
-3. Run the tokens app using the command below and visit https://localhost:5000 to generate the corresponding OAuth tokens:
-
-```sh
-npm run tokens
-```
+3. Visit the browser version above or run the local command below to generate the corresponding OAuth tokens.
 
 ### Testing
 
@@ -42,3 +43,14 @@ Create an alternative environments (like `.env.kosmos`) and run them with
 ```sh
 ENV=kosmos npm test
 ```
+
+### Local
+
+Start the static server:
+
+```sh
+npm test
+```
+
+then visit http://localhost:8080.
+
