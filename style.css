@@ -17,6 +17,25 @@ body {
 	font-size: 11pt;
 }
 
+header h1 {
+	display: flex;
+	align-items: center;
+	gap: var(--spacing);
+}
+
+header img {
+  width: 32px;
+}
+
+header a:not([aria-hidden="true"]) {
+  opacity: 0.6;
+}
+
+header a {
+  color: var(--body-color);
+  text-decoration: none;
+}
+
 .content {
 	padding: var(--spacing);
 	border-radius: var(--corner);
