@@ -4,13 +4,11 @@
     "start": "http-server",
     "test": "mocha"
   },
-  "devDependencies": {
-    "chai": "^6.2.2",
-    "mocha": "^11.7.5"
-  },
   "dependencies": {
+    "chai": "^6.2.2",
     "dotenv": "^17.2.4",
     "http-server": "^14.1.1",
+    "mocha": "^11.7.5",
     "path-browserify": "0dataapp/path-browserify-ecma"
   }
 }
