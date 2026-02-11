@@ -31,7 +31,7 @@ jobs:
           SURFER_HOST: ${{ secrets.SURFER_HOST }}
           SURFER_FOLDER: ${{ secrets.SURFER_FOLDER }}
         run: |
-          example-command "$SURFER_FOLDER"
+          echo "$SURFER_FOLDER"
 
       - name: Upload
         env:
