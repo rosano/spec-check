@@ -26,33 +26,9 @@ jobs:
       - name: Install surfer
         run: npm -g install cloudron-surfer
 
-      - name: Try this
-        run: echo "${{ github.repository }} is a variable"
-
-      - name: Try this next
-        run: echo "${{ secrets.SURFER_FOLDER }} is a secret"
-        
-      - env:
-          SURFER_FOLDER2: ${{ secrets.SURFER_FOLDER }}
-        run: |
-          echo "$SURFER_FOLDER2 is an env"  
-        
-      - run: |
-          echo "$SURFER_FOLDER3 is an env"
-        env:
-          SURFER_FOLDER3: ${{ secrets.SURFER_FOLDER }}
-
-      - shell: bash
-        env:
-          SURFER_TOKEN: ${{ secrets.SURFER_TOKEN }}
-          SURFER_HOST: ${{ secrets.SURFER_HOST }}
-          SURFER_FOLDER: ${{ secrets.SURFER_FOLDER }}
-        run: |
-          echo "$SURFER_FOLDER"
-
       - name: Upload
         env:
           SURFER_TOKEN: ${{ secrets.SURFER_TOKEN }}
           SURFER_HOST: ${{ secrets.SURFER_HOST }}
           SURFER_FOLDER: ${{ secrets.SURFER_FOLDER }}
-        run: surfer put --token "$SURFER_TOKEN" --server "$SURFER_HOST" build/* "$SURFER_FOLDER"/
+        run: surfer put --token "$SURFER_TOKEN" --server "$SURFER_HOST" build/* "$SURFER_FOLDER"
