@@ -35,6 +35,11 @@ jobs:
           SURFER_FOLDER2: ${{ secrets.SURFER_FOLDER }}
         run: |
           echo "$SURFER_FOLDER2 is an env"  
+        
+      - run: |
+          echo "$SURFER_FOLDER3 is an env"
+        env:
+          SURFER_FOLDER3: ${{ secrets.SURFER_FOLDER }}
 
       - shell: bash
         env:
