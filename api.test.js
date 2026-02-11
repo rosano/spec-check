@@ -155,6 +155,7 @@ describe('read-only token', () => {
 		it(`accepts ${ method }`, async () => {
 			const path = stub.tid();
 			const item = stub.document();
+
 			const put = await State.storage.put(path, item);
 
 			const res = await util.storage(Object.assign(util.clone(State), {
