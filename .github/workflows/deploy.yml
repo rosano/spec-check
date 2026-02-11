@@ -32,9 +32,9 @@ jobs:
         run: echo "${{ secrets.SURFER_FOLDER }} is a secret"
 
       - name: Try this next 2
-        run: echo "${{ SURFER_FOLDE }} is an env"
+        run: echo "${{ SURFER_FOLDER }} is an env"
         env:
-          SURFER_FOLDE: ${{ secrets.SURFER_FOLDER }}
+          SURFER_FOLDER: ${{ secrets.SURFER_FOLDER }}
 
       - shell: bash
         env:
