@@ -72,7 +72,9 @@ before(async () => {
 		State.spec_version = util.webfinger.version(State.webfinger);
 });
 
-after(() => {
+after(function () {
+	this.timeout(5000);
+
 	const erase = async (path, storage) => {
 		const list = await storage.get(path);
 		const body = await list.json();
