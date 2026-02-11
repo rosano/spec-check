@@ -24,7 +24,7 @@ const mod = {
 
   oauth: permission => location.href = `${ util.webfinger.auth(mod._webfinger) }?${ new URLSearchParams({
     redirect_uri: location.href,
-    scope: `${ mod.config.scope }:${ permission }`,
+    scope: `${ permission === '*' ? permission : mod.config.scope }:${ permission === '*' ? 'rw' : permission }`,
     response_type: 'token',
     client_id: location.href,
     state: mod.marshal({
