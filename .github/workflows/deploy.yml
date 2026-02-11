@@ -22,24 +22,8 @@ jobs:
       - name: Build
         run: bash build.sh
 
-      - name: Upload Artifacts
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: 'build/'
+      - name: Install surfer
+        run: npm -g install cloudron-surfer
 
-  deploy:
-    needs: build_site
-    runs-on: ubuntu-latest
-
-    permissions:
-      pages: write
-      id-token: write
-
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
-    steps:
-      - name: Deploy
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Upload
+        run: surfer put --token api-7e6d90ff-5825-4ebe-a85b-a68795055955 --server surfer.cloudron.ml build/* /
