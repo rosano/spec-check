@@ -35,8 +35,8 @@ const checkHeaders = ({res, item}) => {
 		expect(res.headers.get('Cache-control')).to.equal('no-cache');
 	
 	if (State.spec_version >= 11) {
-		expect(Date.parse(res.headers.get('Last-Modified'))).to.be.closeTo(Date.now(), 10000);
 		expect(res.headers.get('Last-Modified')).to.satisfy(util.validDate);
+		expect(Date.parse(res.headers.get('Last-Modified'))).to.be.closeTo(Date.now(), 10000);
 	}
 };
 
@@ -53,8 +53,8 @@ const checkListHeaders = ({entry, item}) => {
 	}
 
 	if (State.spec_version >= 11) {
-		expect(Date.parse(entry['Last-Modified'])).to.be.closeTo(Date.now(), 10000);
 		expect(entry['Last-Modified']).to.satisfy(util.validDate);
+		expect(Date.parse(entry['Last-Modified'])).to.be.closeTo(Date.now(), 10000);
 	}
 };
 
