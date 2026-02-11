@@ -26,4 +26,8 @@ jobs:
         run: npm -g install cloudron-surfer
 
       - name: Upload
-        run: surfer put --token api-7e6d90ff-5825-4ebe-a85b-a68795055955 --server surfer.cloudron.ml build/* /
+        env:
+          SURFER_TOKEN: ${{ secrets.SURFER_TOKEN }}
+          SURFER_HOST: ${{ secrets.SURFER_HOST }}
+          SURFER_FOLDER: ${{ secrets.SURFER_FOLDER }}
+        run: surfer put --token "$SURFER_TOKEN" --server "$SURFER_HOST" build/* "$SURFER_FOLDER"/
