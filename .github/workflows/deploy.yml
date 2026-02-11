@@ -30,11 +30,11 @@ jobs:
 
       - name: Try this next
         run: echo "${{ secrets.SURFER_FOLDER }} is a secret"
-
-      - name: Try this next 2
-        run: echo "${{ SURFER_FOLDER }} is an env"
-        env:
-          SURFER_FOLDER: ${{ secrets.SURFER_FOLDER }}
+        
+      - env:
+          SURFER_FOLDER2: ${{ secrets.SURFER_FOLDER }}
+        run: |
+          echo "$SURFER_FOLDER2 is an env"  
 
       - shell: bash
         env:
