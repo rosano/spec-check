@@ -25,9 +25,17 @@ jobs:
       - name: Install surfer
         run: npm -g install cloudron-surfer
 
+      - shell: bash
+        env:
+          SURFER_TOKEN: ${{ secrets.SURFER_TOKEN }}
+          SURFER_HOST: ${{ secrets.SURFER_HOST }}
+          SURFER_FOLDER: ${{ secrets.SURFER_FOLDER }}
+        run: |
+          example-command "$SURFER_FOLDER"
+
       - name: Upload
         env:
           SURFER_TOKEN: ${{ secrets.SURFER_TOKEN }}
           SURFER_HOST: ${{ secrets.SURFER_HOST }}
           SURFER_FOLDER: ${{ secrets.SURFER_FOLDER }}
-        run: surfer put --token "$SURFER_TOKEN" --server "$SURFER_HOST" build/* "$SURFER_FOLDER"/
+        run: surfer surfer put --token "$SURFER_TOKEN" --server "$SURFER_HOST" build/* "$SURFER_FOLDER"/
